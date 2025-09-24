@@ -1,33 +1,39 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import TabLabel from "@/components/TabLabel";
+import { Tabs } from "expo-router";
+import React from "react";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
+        tabBarStyle: {
+          backgroundColor: "transparent",
+          elevation: 0,
+          paddingBottom: 8,
+          borderColor: "transparent",
+        },
+        tabBarIcon: () => null,
       }}>
       <Tabs.Screen
-        name="index"
+        name="workout"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarLabel: ({ focused }) =>
+            TabLabel({ labelName: "Workout", focused }),
+        }}
+      />
+      <Tabs.Screen
+        name="feed"
+        options={{
+          tabBarLabel: ({ focused }) =>
+            TabLabel({ labelName: "Feed", focused }),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarLabel: ({ focused }) =>
+            TabLabel({ labelName: "Explore", focused }),
         }}
       />
     </Tabs>
