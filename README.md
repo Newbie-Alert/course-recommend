@@ -57,4 +57,4 @@
 
 - 내 폰에 받은 어플 들어가시면 QR찍든, url입력하라고 뜨는데
 - 코드에디터 터미널에 `npx expo start --dev-client` 입력하시면
-- QR 뜹니당 그거 찍으시면 damn 🤘
+- QR 뜹니당 그거 찍으시면 danm 🤘
