@@ -5,30 +5,48 @@ import { Platform, TouchableOpacity } from "react-native";
 
 import { Text } from "@react-navigation/elements";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function GoogleSignInButton() {
-  const redirectTo = makeRedirectUri();
+  // redirectTo: /auth/callback 붙여주기
+  const redirectTo =
+    Platform.OS === "web"
+      ? "http://localhost:8081/auth/callback"
+      : makeRedirectUri({ scheme: "runningcourse", path: "auth/callback" });
+
+  console.log("redirectTo:", redirectTo);
 
   function extractParamsFromUrl(url: string) {
     const parsedUrl = new URL(url);
-    const hash = parsedUrl.hash.substring(1); // Remove the leading '#'
-    const params = new URLSearchParams(hash);
+
+    // 해시 파라미터 (#...)
+    const hash = parsedUrl.hash.substring(1);
+    const hashParams = new URLSearchParams(hash);
+
+    // 쿼리 파라미터 (?...)
+    const searchParams = parsedUrl.searchParams;
 
     return {
-      access_token: params.get("access_token"),
-      expires_in: parseInt(params.get("expires_in") || "0"),
-      refresh_token: params.get("refresh_token"),
-      token_type: params.get("token_type"),
-      provider_token: params.get("provider_token"),
-      code: params.get("code"),
+      // implicit flow
+      access_token: hashParams.get("access_token"),
+      expires_in: parseInt(hashParams.get("expires_in") || "0"),
+      refresh_token: hashParams.get("refresh_token"),
+      token_type: hashParams.get("token_type"),
+      provider_token: hashParams.get("provider_token"),
+
+      // code flow
+      code: searchParams.get("code"),
+      error: searchParams.get("error"),
+      error_description: searchParams.get("error_description"),
     };
   }
 
   async function onSignInButtonPress() {
     console.debug("onSignInButtonPress - start");
+
     const res = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
@@ -50,55 +68,56 @@ export default function GoogleSignInButton() {
       redirectTo,
       { showInRecents: true }
     ).catch((err) => {
-      console.error("onSignInButtonPress - openAuthSessionAsync - error", {
-        err,
-      });
-      console.log(err);
+      console.error("openAuthSessionAsync - error", err);
     });
 
-    console.debug("onSignInButtonPress - openAuthSessionAsync - result", {
-      result,
-    });
-
-    console.log(result);
+    console.debug("openAuthSessionAsync - result", result);
 
     if (result && result.type === "success") {
-      console.debug("onSignInButtonPress - openAuthSessionAsync - success");
       const params = extractParamsFromUrl(result.url);
-      console.debug("onSignInButtonPress - openAuthSessionAsync - success", {
-        params,
-      });
+      console.debug("Auth params:", params);
+
+      if (params.code) {
+        // Authorization Code Flow
+        console.debug("exchangeCodeForSession - start");
+        const { data, error } = await supabase.auth.exchangeCodeForSession(
+          params.code
+        );
+        console.debug("exchangeCodeForSession - result", { data, error });
+        if (!error && data.session) {
+          router.replace("/(tabs)/workout"); // ✅ Clerk처럼 강제로 화면 이동
+        }
+        return;
+      }
 
       if (params.access_token && params.refresh_token) {
-        console.debug("onSignInButtonPress - setSession");
+        // Implicit Flow
+        console.debug("setSession - start");
         const { data, error } = await supabase.auth.setSession({
           access_token: params.access_token,
           refresh_token: params.refresh_token,
         });
-        console.debug("onSignInButtonPress - setSession - success", {
-          data,
-          error,
-        });
+        console.debug("setSession - result", { data, error });
+
         return;
-      } else {
-        console.error("onSignInButtonPress - setSession - failed");
-        // sign in/up failed
       }
+
+      console.error("No code or tokens found in redirect URL", params);
     } else {
-      console.error("onSignInButtonPress - openAuthSessionAsync - failed");
+      console.error("openAuthSessionAsync - failed");
     }
   }
 
-  // to warm up the browser
+  // warm up / cool down (네이티브 전용)
   useEffect(() => {
     if (Platform.OS !== "web") {
       WebBrowser.warmUpAsync();
-
       return () => {
         WebBrowser.coolDownAsync();
       };
     }
   }, []);
+
   return (
     <TouchableOpacity
       onPress={onSignInButtonPress}
@@ -129,7 +148,7 @@ export default function GoogleSignInButton() {
         style={{
           fontSize: 16,
           color: "#757575",
-          fontFamily: "Roboto-Regular", // Assuming Roboto is available; install via expo-google-fonts or similar if needed
+          fontFamily: "Roboto-Regular",
           fontWeight: "500",
         }}>
         Sign in with Google

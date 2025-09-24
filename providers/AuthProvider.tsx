@@ -1,6 +1,7 @@
 import { AuthContext } from "@/hooks/useAuthContext";
 import { supabase } from "@/lib/supabase";
 import type { Session } from "@supabase/supabase-js";
+import { router } from "expo-router";
 import { PropsWithChildren, useEffect, useState } from "react";
 
 export default function AuthProvider({ children }: PropsWithChildren) {
@@ -43,26 +44,25 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 
   // Fetch the profile when the session changes
   useEffect(() => {
-    const fetchProfile = async () => {
-      setIsLoading(true);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", { event, session });
 
-      if (session) {
-        const { data } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+      setSession(session);
 
-        setProfile(data);
-      } else {
-        setProfile(null);
+      if (event === "SIGNED_IN") {
+        router.replace("/(tabs)/workout");
       }
+      if (event === "SIGNED_OUT") {
+        router.replace("/(auth)/login");
+      }
+    });
 
-      setIsLoading(false);
+    return () => {
+      subscription.unsubscribe();
     };
-
-    fetchProfile();
-  }, [session]);
+  }, []);
 
   return (
     <AuthContext.Provider
