@@ -39,7 +39,13 @@
           }
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow RUN to use your location."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
