@@ -1,50 +1,60 @@
-# Welcome to your Expo app 👋
+# expo dev-client 모드로 실행하기
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+- 이 모드로 실행하면 소셜 로그인 시 redirection 같은 게 정상적으로 작동합니당.
+- 한번 빌드하면 실시간으로 변경사항이 반영될 수도 있어욥
 
-## Get started
+<br/>
 
-1. Install dependencies
+## 0. expo 계정 생성
 
-   ```bash
-   npm install
-   ```
+- expo 페이지 가셔서 계정 생성하시면 됩니당.
 
-2. Start the app
+<br/>
 
-   ```bash
-   npx expo start
-   ```
+## 1. `eas.json`에 development 프로필 추가
 
-In the output, you'll find options to open the app in a
+- 루트에 `eas.json` 생성 후 아래 코드 추가
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```json
+{
+  "cli": {
+    "version": ">= 3.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  }
+}
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 2. eas 전역 설치
 
-## Learn more
+- 터미널에 `npm install -g eas-cli` 실행
 
-To learn more about developing your project with Expo, look at the following resources:
+<br/>
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 3. eas 빌드 실행 (android, IOS)
 
-## Join the community
+- android 앱: `eas build --profile development --platform android`
+- IOS 앱: `eas build --profile development --platform ios`
+  위 명령어 실행하면 로긘 하라고 뜰텐데 expo 계정, 비번 입력하시면 돼욥
 
-Join our community of developers creating universal apps.
+빌드가 완료되면 expo 페이지에 플젝이 알아서 생기는데
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+플젝 들어가시면 `install`이라고 파란 버튼이 있습니다.
+
+그거 클릭하시면 앱을 내 폰으로 다운 받을 수 있게 됩니당.
+
+<br/>
+
+## 4. 이제 개발할 때 dev client 사용하시면 됩니당
+
+- 내 폰에 받은 어플 들어가시면 QR찍든, url입력하라고 뜨는데
+- 코드에디터 터미널에 `npx expo start --dev-client` 입력하시면
+- QR 뜹니당 그거 찍으시면 damn 🤘
