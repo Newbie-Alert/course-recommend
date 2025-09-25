@@ -3,7 +3,7 @@ import { supabase } from "./supabase/supabase";
 
 /**
  * 
- * @returns supabase storage에 업로드 후 path 반환
+ * @returns supabase storage에 업로드 후 이미지 저장 경로 반환
  */
 export const pickAndUploadImage = async () => {
   // 1. 이미지 선택
@@ -26,8 +26,6 @@ export const pickAndUploadImage = async () => {
   const response = await fetch(uri);
   const blob = await response.blob();
 
-  console.log(blob)
-
   // 3. Supabase Storage 업로드
   const { data, error } = await supabase.storage
     .from("feeds")
@@ -41,5 +39,6 @@ export const pickAndUploadImage = async () => {
   }
 
   console.log("Uploaded path:", data.path);
+
   return data.path;
 };
