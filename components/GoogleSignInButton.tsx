@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase";
 import { makeRedirectUri } from "expo-auth-session";
 import { useEffect } from "react";
 import { Platform, TouchableOpacity } from "react-native";

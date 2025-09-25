@@ -1,5 +1,5 @@
 import { AuthContext } from "@/hooks/useAuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase/supabase";
 import type { Session } from "@supabase/supabase-js";
 import { router } from "expo-router";
 import { PropsWithChildren, useEffect, useState } from "react";
