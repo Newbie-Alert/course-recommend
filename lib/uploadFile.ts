@@ -26,10 +26,12 @@ export const pickAndUploadImage = async () => {
   const response = await fetch(uri);
   const blob = await response.blob();
 
+  console.log(blob)
+
   // 3. Supabase Storage 업로드
   const { data, error } = await supabase.storage
-    .from("feed")
-    .upload(`public/${fileName}`, blob, {
+    .from("feeds")
+    .upload(`public/${fileName}`, uri, {
       contentType: blob.type,
     });
 

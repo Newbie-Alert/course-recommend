@@ -12,21 +12,22 @@ export const getAllFeeds = async () => {
   }
 }
 
-type FeedSchema = {
+export type FeedSchema = {
   content: string;
-  image_url: string;
-  likes: number;
+  image_url?: string;
+  userId: string;
 }
 
-export const createFeed = async ({content,image_url,likes}:FeedSchema) => {
+export const createFeed = async ({content,image_url,userId}:FeedSchema) => {
   try {
     const { data, error } = await supabase
   .from('feeds')
   .insert([
-    {  },
-  ])
-  .select()
-  } catch (error) {
+    {content, image_url, writer:userId},
+  ]).select()
     
+    console.log('insertData', data)
+  } catch (error) {
+    throw new Error(`supabase insert Feed Error:: ${error}`)
   }
 }
