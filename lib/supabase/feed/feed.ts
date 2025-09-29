@@ -1,29 +1,25 @@
 import { supabase } from "../supabase";
+import { CreateFeedSchema, FeedSchema } from "./types";
 
-export const getAllFeeds = async () => {
-  try {
+export const getAllFeeds = async ():Promise<FeedSchema[] | null> => {
     let { data: feeds, error } = await supabase
     .from('feeds')
     .select('*')
     
-    return feeds
-  } catch (error) {
+  if (error) {
     throw new Error('feed fetch Error');
   }
+
+  return feeds
 }
 
-export type FeedSchema = {
-  content: string;
-  image_url?: string;
-  userId: string;
-}
 
-export const createFeed = async ({ content, image_url, userId }: FeedSchema) => {
+export const createFeed = async ({ content, image_url, userId, location}: CreateFeedSchema) => {
   try {
     const { data, error } = await supabase
   .from('feeds')
   .insert([
-    {content, image_url, writer: userId},
+    {content, image_url, writer: userId, location},
   ]).select()
     if (error) {
       console.log('insertError: error', error);
@@ -34,4 +30,11 @@ export const createFeed = async ({ content, image_url, userId }: FeedSchema) => 
   } catch (error) {
     throw new Error(`supabase insert Feed Error:: ${error}`)
   }
+}
+
+export const getFeedImageUrl = (imageName:string | undefined) => {
+  if (!imageName) return;
+  
+  const { data } = supabase.storage.from('feeds').getPublicUrl(imageName);
+  return data.publicUrl
 }

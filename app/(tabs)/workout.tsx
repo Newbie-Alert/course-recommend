@@ -1,7 +1,7 @@
-import LogoutButton from "@/components/LogoutButton";
+import LogoutButton from "@/components/ui/LogoutButton";
 import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 export default function Workout() {
   const [location, setLocation] = useState<Location.LocationObject | null>(

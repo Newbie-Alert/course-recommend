@@ -32,7 +32,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Auth state changed:", { event: _event, session });
+      // console.log("Auth state changed:", { event: _event, session });
       setSession(session);
     });
 
@@ -47,7 +47,7 @@ export default function AuthProvider({ children }: PropsWithChildren) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", { event, session });
+      // console.log("Auth state changed:", { event, session });
 
       setSession(session);
 
