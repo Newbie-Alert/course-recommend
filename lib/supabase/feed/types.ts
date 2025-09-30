@@ -15,5 +15,6 @@ export type FeedSchema = {
   content: string;
   image_url?: string;
   likes: number;
-  location?: LocationObject|null
+  location?: LocationObject | null
+  likers:{senderId:string, full_name:string}[]
 }

@@ -75,7 +75,11 @@ export default function FeedScreen() {
         ]}
       />
       <FlatList
-        data={feed}
+        data={feed.sort(
+          (a, b) =>
+            new Date(a.inserted_at).getTime() -
+            new Date(b.inserted_at).getTime()
+        )}
         keyExtractor={(feed) => feed.id}
         renderItem={({ item }) => <FeedCard {...item} />}
         refreshControl={
