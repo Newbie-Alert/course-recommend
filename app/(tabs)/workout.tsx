@@ -1,7 +1,7 @@
-import LogoutButton from "@/components/LogoutButton";
 import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 
 export default function Workout() {
   const [location, setLocation] = useState<Location.LocationObject | null>(
@@ -26,9 +26,35 @@ export default function Workout() {
   }, []);
 
   return (
-    <View>
-      <LogoutButton />
-      <Text>a</Text>
+    <View style={styles.container}>
+      {location && (
+        <MapView
+          provider={PROVIDER_GOOGLE}
+          initialRegion={{
+            latitude: location?.coords.latitude,
+            longitude: location?.coords.longitude,
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.005,
+          }}
+          style={styles.map}>
+          <Marker
+            coordinate={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            }}
+          />
+        </MapView>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  map: {
+    width: "100%",
+    height: "100%",
+  },
+});
