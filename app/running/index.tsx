@@ -5,10 +5,20 @@ import React, { useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function RunningStartPage() {
+  const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const timeRef = useRef<number | null>(null);
 
   const startRunning = () => {
+    if (!isRunning) {
+      setIsRunning(true);
+      setIsPaused(false);
+      startTimer();
+    }
+  };
+
+  const startTimer = () => {
     if (!timeRef.current) {
       timeRef.current = setInterval(() => {
         setSeconds((prev) => prev + 1);
@@ -16,7 +26,22 @@ export default function RunningStartPage() {
     }
   };
 
-  const pauseRunning = () => {};
+  const pauseRunning = () => {
+    if (isRunning && !isPaused) {
+      setIsPaused(true);
+      if (timeRef.current) {
+        clearInterval(timeRef.current);
+        timeRef.current = null;
+      }
+    }
+  };
+
+  const resumeRunning = () => {
+    if (isRunning && isPaused) {
+      setIsPaused(false);
+      startTimer();
+    }
+  };
   const stopRunning = () => {};
 
   return (
@@ -33,20 +58,34 @@ export default function RunningStartPage() {
           icon={<FontAwesome name="stop" size={22} color="black" />}
           backgroundColor="#F5F5F5"
         />
-        <CircleButton
-          onPress={startRunning}
-          width={85}
-          height={85}
-          icon={<FontAwesome name="play" size={30} color="black" />}
-          backgroundColor="#DBFF00"
-        />
-        <CircleButton
-          onPress={pauseRunning}
-          width={60}
-          height={60}
-          icon={<FontAwesome name="pause" size={22} color="black" />}
-          backgroundColor="#F5F5F5"
-        />
+        {!isRunning && (
+          <CircleButton
+            onPress={startRunning}
+            width={85}
+            height={85}
+            icon={<FontAwesome name="play" size={30} color="black" />}
+            backgroundColor="#DBFF00"
+          />
+        )}
+
+        {isPaused && (
+          <CircleButton
+            onPress={resumeRunning}
+            width={85}
+            height={85}
+            icon={<FontAwesome name="play" size={30} color="black" />}
+            backgroundColor="#DBFF00"
+          />
+        )}
+        {!isPaused && (
+          <CircleButton
+            onPress={pauseRunning}
+            width={60}
+            height={60}
+            icon={<FontAwesome name="pause" size={22} color="black" />}
+            backgroundColor="#F5F5F5"
+          />
+        )}
       </View>
 
       <View style={styles.allRecordContainer}>
@@ -92,7 +131,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 20,
   },
   allRecordContainer: {
     display: "flex",
