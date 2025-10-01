@@ -1,5 +1,5 @@
 import * as ImagePicker from "expo-image-picker";
-import { supabase } from "./supabase/supabase";
+import { supabase } from "../supabase";
 
 /**
  * 
@@ -24,13 +24,22 @@ export const pickAndUploadImage = async () => {
 
   // 2. 파일을 fetch로 Blob으로 불러오기
   const response = await fetch(uri);
-  const blob = await response.blob();
+  const arrayBuffer = await response.arrayBuffer();
+
+    const mimeType =
+    asset.mimeType ??
+    (fileExt === "png"
+      ? "image/png"
+      : fileExt === "heic"
+      ? "image/heic"
+        : "image/jpeg");
+  
 
   // 3. Supabase Storage 업로드
   const { data, error } = await supabase.storage
     .from("feeds")
-    .upload(`public/${fileName}`, uri, {
-      contentType: blob.type,
+    .upload(`public/${fileName}`, arrayBuffer, {
+      contentType: mimeType,
     });
 
   if (error) {

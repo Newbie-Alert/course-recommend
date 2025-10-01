@@ -13,6 +13,11 @@
       "supportsTablet": true
     },
     "android": {
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCcmK7V7ez3FMu5GNKMOySChJbLY6H7LmQ"
+        }
+      },
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -60,9 +65,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "7221ca8e-2d3f-4aa9-a628-3a5f697c8dff"
+        "projectId": "8b5a3185-69e1-466c-8466-dcaec3347da0"
       }
     },
-    "owner": "ji-hyun"
+    "owner": "snort"
   }
 }
