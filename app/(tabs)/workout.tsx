@@ -1,9 +1,10 @@
 import CircleButton from "@/components/ui/CircleButton";
+import { LinearGradient } from "expo-linear-gradient";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 
 // * Workout Page: 사용자의 현재위치. 러닝 시작 버튼. 내 근처 공유된 러닝 루트.
 
@@ -45,13 +46,17 @@ export default function Workout() {
           }}
           showsUserLocation
           followsUserLocation={true}
-          style={styles.map}>
-          <Marker coordinate={currentLocation?.coords} />
-        </MapView>
+          style={styles.map}></MapView>
       )}
+      <LinearGradient
+        colors={["rgba(233, 233, 233, 0.8)", "transparent"]}
+        start={{ x: 0.5, y: 0.2 }}
+        end={{ x: 0.5, y: 0 }}
+        style={styles.gradient}
+      />
       <View style={styles.startBtn}>
         <CircleButton
-          onPress={() => router.push("/start")}
+          onPress={() => router.push("/running")}
           width={100}
           height={100}
           backgroundColor="#085FDE"
@@ -70,6 +75,13 @@ const styles = StyleSheet.create({
   map: {
     width: "100%",
     height: "100%",
+  },
+  gradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 250, // 그라데이션 높이
   },
   startBtn: {
     position: "absolute",
