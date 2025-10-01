@@ -1,4 +1,4 @@
-import GoogleSignInButton from "@/components/GoogleSignInButton";
+import GoogleSignInButton from "@/components/ui/GoogleSignInButton";
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { Redirect } from "expo-router";
 import React from "react";

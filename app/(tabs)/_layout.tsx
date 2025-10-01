@@ -1,4 +1,4 @@
-import TabLabel from "@/components/TabLabel";
+import TabLabel from "@/components/ui/TabLabel";
 import { Tabs } from "expo-router";
 import React from "react";
 
