@@ -26,6 +26,7 @@ export default function FeedCard(props: FeedSchema) {
     if (!userId) throw new Error("유저 ID가 없습니다");
 
     setCanLikes(false);
+    console.log("id", id);
     try {
       const res = await sendLike({
         feedId: id,
@@ -33,7 +34,9 @@ export default function FeedCard(props: FeedSchema) {
       });
       setLikes(res[0].likes);
       setCanLikes(true);
+      console.log("first");
     } catch (error) {
+      console.log(error);
       setLikes(props.likes);
       setCanLikes(true);
     }

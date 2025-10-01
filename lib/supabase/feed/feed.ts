@@ -67,8 +67,8 @@ export const sendLike = async ({ feedId,  senderId }: AddLike) => {
   
   if (fetchSenderErr) throw fetchSenderErr;
 
-  const isLiked = feed.likers.find((item: Likers) => item.senderId === senderId);
-  const filteredLikers = feed.likers.filter((item: Likers) => item.senderId !== senderId);
+  const isLiked = (feed.likers || []).find((item: Likers) => item.senderId === senderId);
+  const filteredLikers = (feed.likers || []).filter((item: Likers) => item.senderId !== senderId);
 
   const updatedLikes = isLiked ? feed.likes - 1 : feed.likes + 1;
   const updatedLikers = isLiked  ? [...filteredLikers || [] ] : [...feed.likers || [], { senderId, full_name: sender.full_name}]
