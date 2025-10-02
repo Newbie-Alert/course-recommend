@@ -11,7 +11,7 @@ export default function StartButton({ onPress }: StartButtonProps) {
   return (
     <View>
       <LinearGradient
-        colors={["rgba(236, 236, 236, 0.8)", "transparent"]}
+        colors={["rgba(244, 244, 244, 0.642)", "transparent"]}
         start={{ x: 0.5, y: 0.2 }}
         end={{ x: 0.5, y: 0 }}
         style={styles.gradient}
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   startButtonContainer: {
     position: "absolute",
-    bottom: 1,
+    bottom: 50,
     left: "50%",
     transform: [
       {
