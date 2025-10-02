@@ -5,15 +5,42 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function RecordModal() {
+export default function RecordModal({
+  snapPointIndex,
+}: {
+  snapPointIndex: number;
+}) {
   const { status, seconds, pauseRunning, resumeRunning, stopRunning } =
     useRun();
 
+  console.log(snapPointIndex);
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          justifyContent: snapPointIndex === 0 ? "flex-start" : "center",
+          gap: snapPointIndex === 0 ? 20 : 50,
+        },
+      ]}>
       <View style={styles.recordContainer}>
-        <Text style={styles.recordHeader}>{formatTime(seconds)}</Text>
-        <Text style={styles.recordUnit}>분(minutes)</Text>
+        <Text
+          style={[
+            styles.recordHeader,
+            {
+              color: snapPointIndex === 0 ? "#085FDE" : "#FAFAFA",
+              fontSize: snapPointIndex === 0 ? 42 : 52,
+            },
+          ]}>
+          {formatTime(seconds)}
+        </Text>
+        <Text
+          style={[
+            styles.recordUnit,
+            { color: snapPointIndex === 0 ? "#085FDE" : "#FAFAFA" },
+          ]}>
+          분(minutes)
+        </Text>
       </View>
       <View style={styles.buttonContainer}>
         <CircleButton
@@ -65,17 +92,17 @@ export default function RecordModal() {
 const styles = StyleSheet.create({
   container: {
     display: "flex",
-    backgroundColor: "#085FDE",
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
+    gap: 50,
   },
   recordContainer: {
     display: "flex",
     alignItems: "center",
   },
   recordHeader: {
-    fontSize: 52,
     fontWeight: 600,
-    color: "#FAFAFA",
   },
   recordUnit: {
     color: "#FAFAFA",
