@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useRef, useState } from "react";
 
-type RunStatus = "idle" | "running" | "paused" | "stopped";
+type RunStatus = "running" | "paused" | "stopped";
 
 type RunContextType = {
   status: RunStatus;
@@ -18,7 +18,7 @@ export default function RunProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [status, setStatus] = useState<RunStatus>("idle");
+  const [status, setStatus] = useState<RunStatus>("stopped");
   const [seconds, setSeconds] = useState(0);
   const timeRef = useRef<number | null>(null);
 
