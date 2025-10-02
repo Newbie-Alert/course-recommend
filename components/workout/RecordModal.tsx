@@ -1,6 +1,6 @@
 import CircleButton from "@/components/ui/CircleButton";
 import { useRun } from "@/providers/RunProvider";
-import { formatTime } from "@/util/formatTime";
+import { formatTime } from "@/util/util";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -10,10 +10,16 @@ export default function RecordModal({
 }: {
   snapPointIndex: number;
 }) {
-  const { status, seconds, pauseRunning, resumeRunning, stopRunning } =
-    useRun();
+  const {
+    status,
+    seconds,
+    distanceKm,
+    pauseRunning,
+    resumeRunning,
+    stopRunning,
+  } = useRun();
 
-  console.log(snapPointIndex);
+  console.log(distanceKm);
   return (
     <View
       style={[
@@ -73,7 +79,9 @@ export default function RecordModal({
 
       <View style={styles.allRecordContainer}>
         <View style={styles.eachRecordContainer}>
-          <Text style={styles.eachRecordHeader}>0.00</Text>
+          <Text style={styles.eachRecordHeader}>
+            {distanceKm.toFixed(5)} km
+          </Text>
           <Text style={styles.eachRecordUnit}>거리(km)</Text>
         </View>
         <View style={styles.eachRecordContainer}>
