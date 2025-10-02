@@ -2,40 +2,12 @@ import CircleButton from "@/components/ui/CircleButton";
 import { useRun } from "@/providers/RunProvider";
 import { formatTime } from "@/util/formatTime";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useRef, useState } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 export default function RecordModal() {
-  const [seconds, setSeconds] = useState(0);
-  const timeRef = useRef<number | null>(null);
-
-  const { status, setStatus } = useRun();
-
-  const startTimer = () => {
-    if (!timeRef.current) {
-      timeRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-  };
-
-  const pauseRunning = () => {
-    if (status === "running") {
-      setStatus("paused");
-      if (timeRef.current) {
-        clearInterval(timeRef.current);
-        timeRef.current = null;
-      }
-    }
-  };
-
-  const resumeRunning = () => {
-    if (status === "paused") {
-      setStatus("running");
-      startTimer();
-    }
-  };
-  const stopRunning = () => {};
+  const { status, seconds, pauseRunning, resumeRunning, stopRunning } =
+    useRun();
 
   return (
     <View style={styles.container}>

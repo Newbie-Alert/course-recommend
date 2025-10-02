@@ -13,9 +13,7 @@ export default function WorkoutScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   // 러닝 상태
-  const { status, setStatus } = useRun();
-
-  const startRunning = () => setStatus("running");
+  const { status, startRunning } = useRun();
 
   return (
     <GestureHandlerRootView style={styles.container}>
