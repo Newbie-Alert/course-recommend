@@ -1,54 +1,52 @@
 import CircleButton from "@/components/ui/CircleButton";
-import { formatTime } from "@/util/formatTime";
+import { useRun } from "@/providers/RunProvider";
+import { formatTime } from "@/util/util";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import React, { useRef, useState } from "react";
+import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-export default function RunningStartPage() {
-  const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const timeRef = useRef<number | null>(null);
+export default function RecordModal({
+  snapPointIndex,
+}: {
+  snapPointIndex: number;
+}) {
+  const {
+    status,
+    seconds,
+    distanceKm,
+    pauseRunning,
+    resumeRunning,
+    stopRunning,
+  } = useRun();
 
-  const startRunning = () => {
-    if (!isRunning) {
-      setIsRunning(true);
-      setIsPaused(false);
-      startTimer();
-    }
-  };
-
-  const startTimer = () => {
-    if (!timeRef.current) {
-      timeRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
-    }
-  };
-
-  const pauseRunning = () => {
-    if (isRunning && !isPaused) {
-      setIsPaused(true);
-      if (timeRef.current) {
-        clearInterval(timeRef.current);
-        timeRef.current = null;
-      }
-    }
-  };
-
-  const resumeRunning = () => {
-    if (isRunning && isPaused) {
-      setIsPaused(false);
-      startTimer();
-    }
-  };
-  const stopRunning = () => {};
-
+  console.log(distanceKm);
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          justifyContent: snapPointIndex === 0 ? "flex-start" : "center",
+          gap: snapPointIndex === 0 ? 20 : 50,
+        },
+      ]}>
       <View style={styles.recordContainer}>
-        <Text style={styles.recordHeader}>{formatTime(seconds)}</Text>
-        <Text style={styles.recordUnit}>분(minutes)</Text>
+        <Text
+          style={[
+            styles.recordHeader,
+            {
+              color: snapPointIndex === 0 ? "#085FDE" : "#FAFAFA",
+              fontSize: snapPointIndex === 0 ? 42 : 52,
+            },
+          ]}>
+          {formatTime(seconds)}
+        </Text>
+        <Text
+          style={[
+            styles.recordUnit,
+            { color: snapPointIndex === 0 ? "#085FDE" : "#FAFAFA" },
+          ]}>
+          분(minutes)
+        </Text>
       </View>
       <View style={styles.buttonContainer}>
         <CircleButton
@@ -58,17 +56,8 @@ export default function RunningStartPage() {
           icon={<FontAwesome name="stop" size={22} color="black" />}
           backgroundColor="#F5F5F5"
         />
-        {!isRunning && (
-          <CircleButton
-            onPress={startRunning}
-            width={85}
-            height={85}
-            icon={<FontAwesome name="play" size={30} color="black" />}
-            backgroundColor="#DBFF00"
-          />
-        )}
 
-        {isPaused && (
+        {status === "paused" && (
           <CircleButton
             onPress={resumeRunning}
             width={85}
@@ -77,7 +66,7 @@ export default function RunningStartPage() {
             backgroundColor="#DBFF00"
           />
         )}
-        {!isPaused && (
+        {status !== "paused" && (
           <CircleButton
             onPress={pauseRunning}
             width={60}
@@ -90,7 +79,9 @@ export default function RunningStartPage() {
 
       <View style={styles.allRecordContainer}>
         <View style={styles.eachRecordContainer}>
-          <Text style={styles.eachRecordHeader}>0.00</Text>
+          <Text style={styles.eachRecordHeader}>
+            {distanceKm.toFixed(5)} km
+          </Text>
           <Text style={styles.eachRecordUnit}>거리(km)</Text>
         </View>
         <View style={styles.eachRecordContainer}>
@@ -108,20 +99,18 @@ export default function RunningStartPage() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     display: "flex",
-    backgroundColor: "#085FDE",
+    flex: 1,
     alignItems: "center",
-    justifyContent: "space-evenly",
+    justifyContent: "center",
+    gap: 50,
   },
   recordContainer: {
     display: "flex",
     alignItems: "center",
   },
   recordHeader: {
-    fontSize: 52,
     fontWeight: 600,
-    color: "#FAFAFA",
   },
   recordUnit: {
     color: "#FAFAFA",
