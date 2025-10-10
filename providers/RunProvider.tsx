@@ -1,8 +1,8 @@
-import { calcDistance } from "@/util/util";
 import * as Location from "expo-location";
+import haversine from "haversine-distance";
 import React, { createContext, useContext, useRef, useState } from "react";
 
-export type RunStatus = "running" | "paused" | "stopped";
+export type RunStatus = "ready" | "running" | "paused" | "stopped";
 export type LatLon = { latitude: number; longitude: number };
 
 export type RunContextType = {
@@ -23,7 +23,7 @@ export default function RunProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [status, setStatus] = useState<RunStatus>("stopped");
+  const [status, setStatus] = useState<RunStatus>("ready");
   const [seconds, setSeconds] = useState(0);
   const [path, setPath] = useState<LatLon[]>([]);
   const [distanceKm, setDistanceKm] = useState(0);
@@ -56,30 +56,39 @@ export default function RunProvider({
 
     watchSubRef.current = await Location.watchPositionAsync(
       {
-        accuracy: Location.Accuracy.Highest,
+        accuracy: Location.Accuracy.Balanced,
         timeInterval: 1000,
-        distanceInterval: 0,
+        distanceInterval: 5,
+        mayShowUserSettingsDialog: true,
       },
       (location) => {
-        const position: LatLon = {
+        // 새로 받은 현재 위치를 객체로 받음
+        const newPosition: LatLon = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         };
 
         setPath((prev) => {
+          // 위치 정보가 처음에 비어 있을 경우, 처음 위치를 경로에 넣음
           if (prev.length === 0) {
-            lastPointRef.current = position;
-            return [position];
+            lastPointRef.current = newPosition;
+            return [newPosition];
           }
-          const last = lastPointRef.current ?? prev[prev.length - 1];
 
-          const disKm = calcDistance(last, position);
+          // 마지막으로 저장된 위치
+          const lastPosition = lastPointRef.current ?? prev[prev.length - 1];
 
-          if (disKm > 0.0005) {
+          // 실제 이동 거리 계산 (haversine 라이브러리 사용)
+          const disKm = haversine(lastPosition, newPosition);
+
+          // 5m 이동 했을 때 새로운 위치를 추가
+          if (disKm > 0.005) {
             setDistanceKm((km) => km + disKm);
-            lastPointRef.current = position;
-            return [...prev, position];
+            lastPointRef.current = newPosition;
+            return [...prev, newPosition];
           }
+
+          // 움직임이 너무 작을 때 기존 경로 그대로 반환
           return prev;
         });
       }
@@ -122,10 +131,7 @@ export default function RunProvider({
   const stopRunning = () => {
     setStatus("stopped");
     clearTimer();
-    setSeconds(0);
     stopWatching();
-    setPath([]);
-    setDistanceKm(0);
   };
 
   return (
@@ -152,3 +158,12 @@ export const useRun = (): RunContextType => {
   }
   return context;
 };
+
+// 러닝 시작 버튼 탭 후 1, 2, 3 카운트 후 러닝 시작
+// 카운트가 끝나고 러닝 출발점 찍는다
+// 러닝 일시 정지 시, 사용자가 움직여도 루트를 그리지 않음, 타이머도 정지
+// 러닝 정지 시, 러닝 끝난지점 찍은 후 기록저장
+// 러닝 루트 공유여부 물어보기  - 지도사진/뛴거리/시간/평균페이스/칼로리 + 유저가 원하면 인증사진 찍고 공유하기
+// 공유한 루트와 내용 피드에 올리기
+
+// 공유하지 않고 기록 분석만 할 경우 프로필로 이동해서 기록 그래프 뵈주기

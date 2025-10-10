@@ -80,7 +80,7 @@ export default function RecordModal({
       <View style={styles.allRecordContainer}>
         <View style={styles.eachRecordContainer}>
           <Text style={styles.eachRecordHeader}>
-            {distanceKm.toFixed(5)} km
+            {(distanceKm / 1000).toFixed(2)} km
           </Text>
           <Text style={styles.eachRecordUnit}>거리(km)</Text>
         </View>
