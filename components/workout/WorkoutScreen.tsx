@@ -22,9 +22,11 @@ export default function WorkoutScreen() {
       {/* 지도 */}
       <WorkoutMap />
       {/* 시작버튼 */}
-      {status === "stopped" && <StartButton onPress={startRunning} />}
+      {(status === "ready" || status === "stopped") && (
+        <StartButton onPress={startRunning} />
+      )}
       {/* 모달 */}
-      {status !== "stopped" && (
+      {(status === "running" || status === "paused") && (
         <BottomSheet
           ref={bottomSheetRef}
           snapPoints={snapPoints}

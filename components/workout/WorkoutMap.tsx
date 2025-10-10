@@ -1,13 +1,15 @@
 import MapLoading from "@/components/workout/MapLoading";
+import { useRun } from "@/providers/RunProvider";
 import * as Location from "expo-location";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 
 export default function WorkoutMap() {
   const [currentLocation, setCurrentLocation] =
     useState<Location.LocationObject | null>(null);
   const [errorMeg, setErrorMeg] = useState<string | null>(null);
+  const { path, status } = useRun();
 
   // 사용자의 현재 위치 초기에 가져오기
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function WorkoutMap() {
 
     getCurrentLocation();
   }, []);
+
   return (
     <View style={styles.container}>
       {currentLocation ? (
@@ -38,7 +41,42 @@ export default function WorkoutMap() {
           }}
           showsUserLocation
           followsUserLocation={true}
-          style={styles.map}></MapView>
+          style={styles.map}>
+          {/* 러닝 시작 지점 */}
+          {path.length > 0 && (
+            <Marker
+              coordinate={{
+                latitude: currentLocation.coords.latitude,
+                longitude: currentLocation.coords.longitude,
+              }}
+              title="START"
+              pinColor="#00C853"
+            />
+          )}
+          {/* 러닝 종료 지점 */}
+          {status === "stopped" && (
+            <Marker
+              coordinate={{
+                latitude: currentLocation.coords.latitude,
+                longitude: currentLocation.coords.longitude,
+              }}
+              title="FINISH"
+              pinColor="#D50000"
+            />
+          )}
+          {/* 러닝 루트 */}
+          {path.length > 1 && (
+            <Polyline
+              coordinates={
+                path || [
+                  { latitude: 35.2518, longitude: 128.752 },
+                  { latitude: 35.2513, longitude: 128.7525 },
+                ]
+              }
+              strokeColor="#085FDE"
+              strokeWidth={5}></Polyline>
+          )}
+        </MapView>
       ) : (
         <MapLoading />
       )}
