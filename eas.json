@@ -4,6 +4,7 @@
   },
   "build": {
     "development": {
+      "env": {},
       "developmentClient": true,
       "distribution": "internal"
     },
