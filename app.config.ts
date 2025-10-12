@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     predictiveBackGestureEnabled: false,
     config: {
       googleMaps: {
-        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        apiKey: process.env.ANDROID_GOOGLE_MAPS_API_KEY,
       },
     },
     package: "com.anonymous.runningcourse",
