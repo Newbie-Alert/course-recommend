@@ -50,7 +50,7 @@ export default function ExploreScreen() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Goog-Api-Key": process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY!,
+          "X-Goog-Api-Key": process.env.ANDROID_GOOGLE_PLACES_API_KEY!,
           "X-Goog-FieldMask":
             "places.displayName,places.formattedAddress,places.location",
         },
