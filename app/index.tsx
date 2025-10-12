@@ -1,10 +1,11 @@
 import { useAuthContext } from "@/hooks/useAuthContext";
-import { Redirect } from "expo-router";
+import { router } from "expo-router";
+import { useEffect } from "react";
 
 export default function Index() {
   const { isLoggedIn } = useAuthContext();
 
-  if (!isLoggedIn) return <Redirect href={"/(auth)/login"} />;
-
-  return <Redirect href={"/(tabs)/workout"} />;
+  useEffect(() => {
+    if (isLoggedIn) router.replace("/(tabs)/workout");
+  }, [isLoggedIn]);
 }

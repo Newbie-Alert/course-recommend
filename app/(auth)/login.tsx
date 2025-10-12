@@ -1,13 +1,15 @@
 import GoogleSignInButton from "@/components/ui/GoogleSignInButton";
 import { useAuthContext } from "@/hooks/useAuthContext";
-import { Redirect } from "expo-router";
-import React from "react";
+import { router } from "expo-router";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 
 export default function Login() {
   const { isLoggedIn } = useAuthContext();
 
-  if (isLoggedIn) return <Redirect href={"/(tabs)/workout"} />;
+  useEffect(() => {
+    if (isLoggedIn) router.replace("/(tabs)/workout");
+  }, [isLoggedIn]);
 
   return (
     <View>
