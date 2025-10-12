@@ -44,27 +44,31 @@ export default function ExploreScreen() {
   }, []);
 
   const fetchPlaces = async (query: string) => {
-    const res = await fetch(
-      "https://places.googleapis.com/v1/places:searchText",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key":
-            process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY!,
-          "X-Goog-FieldMask": "*",
-        },
-        body: JSON.stringify({
-          textQuery: query,
-          languageCode: "ko",
-          regionCode: "KR",
-        }),
-      }
-    );
+    try {
+      const res = await fetch(
+        "https://places.googleapis.com/v1/places:searchText",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key":
+              process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY!,
+            "X-Goog-FieldMask": "*",
+          },
+          body: JSON.stringify({
+            textQuery: query,
+            languageCode: "ko",
+            regionCode: "KR",
+          }),
+        }
+      );
 
-    const data = await res.json();
-    console.log(data);
-    return data.places;
+      const data = await res.json();
+      console.log(data);
+      return data.places;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
