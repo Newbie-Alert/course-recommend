@@ -1,14 +1,15 @@
 import useDebounce from "@/hooks/useDebounce";
-import { Database } from "@/types/db.types";
+import { PlaceResponse } from "@/types/places.type";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import Animated from "react-native-reanimated";
 import RootList from "../feed/RootList";
 import MapLoading from "../workout/MapLoading";
-import ModalBackground from "../workout/ModalBackground";
+import ModalBackgroundWhite from "./ModalBgWhite";
 import SearchBar from "./SearchBar";
 
 export default function ExploreScreen() {
@@ -23,9 +24,38 @@ export default function ExploreScreen() {
 
   // 검색
   const [searchInput, setSearchInput] = useState<string>("");
+  const [inputOpacity, setInputOpacity] = useState<number>(3);
   const debounced = useDebounce({ value: searchInput, delay: 500 });
-  const [searchResult, setSearchResult] =
-    useState<Pick<Database["public"]["Tables"], "feeds">[]>();
+  const [searchResult, setSearchResult] = useState<PlaceResponse["places"]>();
+
+  const fetchPlaces = async (query: string) => {
+    try {
+      const res = await fetch(
+        "https://places.googleapis.com/v1/places:searchText",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key":
+              process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY!,
+            "X-Goog-FieldMask":
+              "places.displayName,places.formattedAddress,places.photos,places.rating,places.userRatingCount,places.reviews,places.googleMapsUri",
+          },
+          body: JSON.stringify({
+            textQuery: query,
+            includedType: "park",
+            languageCode: "ko",
+            regionCode: "KR",
+          }),
+        }
+      );
+
+      const data = await res.json();
+      setSearchResult(data.places);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     async function getCurrentLocation() {
@@ -43,50 +73,26 @@ export default function ExploreScreen() {
     getCurrentLocation();
   }, []);
 
-  const fetchPlaces = async (query: string) => {
-    try {
-      const res = await fetch(
-        "https://places.googleapis.com/v1/places:searchText",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key":
-              process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY!,
-            "X-Goog-FieldMask": "*",
-          },
-          body: JSON.stringify({
-            textQuery: query,
-            languageCode: "ko",
-            regionCode: "KR",
-          }),
-        }
-      );
-
-      const data = await res.json();
-      console.log(data);
-      return data.places;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   useEffect(() => {
+    if (!debounced) return;
     fetchPlaces(debounced);
   }, [debounced]);
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <View
-        style={{
-          position: "absolute",
-          zIndex: 3,
-          top: "5%",
-          left: "50%",
-          transform: [{ translateX: "-50%" }],
-        }}>
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            zIndex: 1,
+            top: "5%",
+            left: "50%",
+            transform: [{ translateX: "-50%" }],
+            opacity: inputOpacity,
+          },
+        ]}>
         <SearchBar input={searchInput} onChange={setSearchInput} />
-      </View>
+      </Animated.View>
       {/* 지도 */}
       <View style={styles.container}>
         {currentLocation ? (
@@ -106,16 +112,21 @@ export default function ExploreScreen() {
         )}
       </View>
       {/* 모달 */}
-      <BottomSheet
-        ref={bottomSheetRef}
-        snapPoints={snapPoints}
-        index={0}
-        onChange={setSnapPointIndex}
-        backgroundComponent={ModalBackground}>
-        <BottomSheetView style={styles.modalContainer}>
-          <RootList />
-        </BottomSheetView>
-      </BottomSheet>
+      {searchResult && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          snapPoints={snapPoints}
+          index={0}
+          onChange={setSnapPointIndex}
+          backgroundComponent={ModalBackgroundWhite}>
+          <BottomSheetView style={[styles.modalContainer, { zIndex: 3 }]}>
+            <RootList
+              searchResult={searchResult}
+              setOpacity={setInputOpacity}
+            />
+          </BottomSheetView>
+        </BottomSheet>
+      )}
     </GestureHandlerRootView>
   );
 }
