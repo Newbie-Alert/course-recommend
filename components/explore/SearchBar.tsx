@@ -5,9 +5,10 @@ import { TextInput, View } from "react-native";
 type Props = {
   input: string;
   onChange: React.Dispatch<React.SetStateAction<string>>;
+  onSubmit: (query: string) => Promise<void>;
 };
 
-export default function SearchBar({ input, onChange }: Props) {
+export default function SearchBar({ input, onChange, onSubmit }: Props) {
   return (
     <View
       style={{
@@ -31,6 +32,9 @@ export default function SearchBar({ input, onChange }: Props) {
           placeholderTextColor={"#000"}
           value={input}
           onChangeText={(text) => onChange(text)}
+          onSubmitEditing={() => {
+            onSubmit(input);
+          }}
           style={{
             width: "100%",
             maxWidth: 250,

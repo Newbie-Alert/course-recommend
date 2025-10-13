@@ -73,11 +73,6 @@ export default function ExploreScreen() {
     getCurrentLocation();
   }, []);
 
-  useEffect(() => {
-    if (!debounced) return;
-    fetchPlaces(debounced);
-  }, [debounced]);
-
   return (
     <GestureHandlerRootView style={styles.container}>
       <Animated.View
@@ -91,7 +86,11 @@ export default function ExploreScreen() {
             opacity: inputOpacity,
           },
         ]}>
-        <SearchBar input={searchInput} onChange={setSearchInput} />
+        <SearchBar
+          input={searchInput}
+          onChange={setSearchInput}
+          onSubmit={fetchPlaces}
+        />
       </Animated.View>
       {/* 지도 */}
       <View style={styles.container}>
@@ -114,6 +113,7 @@ export default function ExploreScreen() {
       {/* 모달 */}
       {searchResult && (
         <BottomSheet
+          key={searchResult.length}
           ref={bottomSheetRef}
           snapPoints={snapPoints}
           index={0}

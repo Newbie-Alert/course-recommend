@@ -41,10 +41,15 @@ export default function RootList({ searchResult, setOpacity }: Props) {
         검색 결과
       </Text>
       <View
-        style={{ width: "100%", paddingHorizontal: 12, paddingBottom: 180 }}>
+        style={{
+          width: "100%",
+          paddingHorizontal: 12,
+          paddingBottom: 170,
+        }}>
         <BottomSheetFlatList
+          enableFooterMarginAdjustment={true}
           data={searchResult}
-          keyExtractor={(item: Place) => item.googleMapsUri}
+          key={searchResult.length}
           renderItem={({ item }: { item: Place }) => {
             const photoUrl = item.photos
               ? `https://places.googleapis.com/v1/${item.photos[0].name}/media?maxWidthPx=800&key=${process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY}`
