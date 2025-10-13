@@ -1,7 +1,7 @@
 import { supabase } from "../supabase";
-import { CreateFeedSchema, FeedSchema } from "./types";
+import { CreateFeedSchema } from "./types";
 
-export const getAllFeeds = async ():Promise<FeedSchema[] | null> => {
+export const getAllFeeds = async () => {
     let { data: feeds, error } = await supabase
     .from('feeds')
     .select('*')
@@ -39,12 +39,12 @@ export const getFeedImageUrl = (imageName:string | undefined) => {
   return data.publicUrl
 }
 
-type AddLike = {
+export type AddLike = {
   senderId: string;
   feedId: string;
 }
 
-type Likers = {
+export type Likers = {
   senderId: string;
   full_name: string;
 }
@@ -75,7 +75,7 @@ export const sendLike = async ({ feedId,  senderId }: AddLike) => {
 
   const { data: updateRes, error: updateErr } = await supabase
     .from('feeds')
-    .update({ likes: updatedLikes, likers: updatedLikers })
+    .update({ likes: updatedLikes, likers: updatedLikers as Likers[] })
     .eq('id', feedId)
     .select()
   
