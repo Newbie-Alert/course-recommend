@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     predictiveBackGestureEnabled: false,
     config: {
       googleMaps: {
-        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY,
+        apiKey: process.env.ANDROID_GOOGLE_MAPS_API_KEY,
       },
     },
     package: "com.anonymous.runningcourse",
@@ -76,9 +76,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     router: {},
     eas: {
-      projectId: "7221ca8e-2d3f-4aa9-a628-3a5f697c8dff",
+      projectId: "8b5a3185-69e1-466c-8466-dcaec3347da0",
     },
   },
 
-  owner: "ji-hyun",
+  owner: "snort",
 });
