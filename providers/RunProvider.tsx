@@ -10,6 +10,9 @@ export type RunContextType = {
   seconds: number;
   path: LatLon[];
   distanceKm: number;
+  avgPace: number | null; // 러닝 종료 시 평균 페이스
+  instPace: number | null; // 실시간 페이스
+  caloriesKcal: number;
   startRunning: () => void;
   pauseRunning: () => void;
   stopRunning: () => void;
@@ -27,6 +30,9 @@ export default function RunProvider({
   const [seconds, setSeconds] = useState(0);
   const [path, setPath] = useState<LatLon[]>([]);
   const [distanceKm, setDistanceKm] = useState(0);
+  const [avgPace, setAvgPace] = useState<number | null>(null);
+  const [instPace, setInstPace] = useState<number | null>(null);
+  const [caloriesKcal, setCaloriesKcal] = useState(0);
 
   const timeRef = useRef<number | null>(null);
   const watchSubRef = useRef<Location.LocationSubscription>(null);
@@ -141,6 +147,9 @@ export default function RunProvider({
         seconds,
         path,
         distanceKm,
+        avgPace,
+        instPace,
+        caloriesKcal,
         startRunning,
         stopRunning,
         pauseRunning,
@@ -158,12 +167,3 @@ export const useRun = (): RunContextType => {
   }
   return context;
 };
-
-// 러닝 시작 버튼 탭 후 1, 2, 3 카운트 후 러닝 시작
-// 카운트가 끝나고 러닝 출발점 찍는다
-// 러닝 일시 정지 시, 사용자가 움직여도 루트를 그리지 않음, 타이머도 정지
-// 러닝 정지 시, 러닝 끝난지점 찍은 후 기록저장
-// 러닝 루트 공유여부 물어보기  - 지도사진/뛴거리/시간/평균페이스/칼로리 + 유저가 원하면 인증사진 찍고 공유하기
-// 공유한 루트와 내용 피드에 올리기
-
-// 공유하지 않고 기록 분석만 할 경우 프로필로 이동해서 기록 그래프 뵈주기
