@@ -32,7 +32,7 @@ export const createFeed = async ({ content, image_url, userId, location}: Create
   }
 }
 
-export const getFeedImageUrl = (imageName:string | undefined) => {
+export const getFeedImageUrl = (imageName:string | null) => {
   if (!imageName) return;
   
   const { data } = supabase.storage.from('feeds').getPublicUrl(imageName);

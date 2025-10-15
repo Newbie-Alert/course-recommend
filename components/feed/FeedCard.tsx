@@ -1,13 +1,15 @@
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { getTimeAgo } from "@/lib/getTimeAge";
 import { getFeedImageUrl, sendLike } from "@/lib/supabase/feed/feed";
-import { FeedSchema } from "@/lib/supabase/feed/types";
+import { Database } from "@/types/db.types";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ImageBackground } from "expo-image";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 
-export default function FeedCard(props: FeedSchema) {
+export default function FeedCard(
+  props: Database["public"]["Tables"]["feeds"]["Row"]
+) {
   const { session } = useAuthContext();
   const user = session?.user.user_metadata || undefined;
   const userId = session?.user.id;

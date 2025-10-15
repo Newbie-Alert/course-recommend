@@ -1,130 +1,121 @@
-import useDebounce from "@/hooks/useDebounce";
-import { PlaceResponse } from "@/types/places.type";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import { getCourses } from "@/lib/supabase/courses/courses";
+import { Database } from "@/types/db.types";
+import { toWGS84 } from "@/util/util";
+import BottomSheet from "@gorhom/bottom-sheet";
 import * as Location from "expo-location";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Animated from "react-native-reanimated";
-import RootList from "../feed/RootList";
 import MapLoading from "../workout/MapLoading";
 import ModalBackgroundWhite from "./ModalBgWhite";
+import OpenCoursesList, { CourseRow } from "./OpenCoursesList";
 import SearchBar from "./SearchBar";
 
 export default function ExploreScreen() {
+  const mapRef = useRef<MapView>(null);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
   const [currentLocation, setCurrentLocation] =
     useState<Location.LocationObject | null>(null);
-  const [errorMeg, setErrorMeg] = useState<string | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<
+    Database["public"]["Tables"]["courses"]["Row"] | null
+  >(null);
 
-  // 모달 사이즈
   const snapPoints = useMemo(() => ["35%", "95%"], []);
-  const bottomSheetRef = useRef<BottomSheet>(null);
-  const [snapPointIndex, setSnapPointIndex] = useState(0);
-
-  // 검색
-  const [searchInput, setSearchInput] = useState<string>("");
-  const [inputOpacity, setInputOpacity] = useState<number>(3);
-  const debounced = useDebounce({ value: searchInput, delay: 500 });
-  const [searchResult, setSearchResult] = useState<PlaceResponse["places"]>();
-
-  const fetchPlaces = async (query: string) => {
-    try {
-      const res = await fetch(
-        "https://places.googleapis.com/v1/places:searchText",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key":
-              process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY!,
-            "X-Goog-FieldMask":
-              "places.displayName,places.formattedAddress,places.photos,places.rating,places.userRatingCount,places.reviews,places.googleMapsUri",
-          },
-          body: JSON.stringify({
-            textQuery: query,
-            includedType: "park",
-            languageCode: "ko",
-            regionCode: "KR",
-          }),
-        }
-      );
-
-      const data = await res.json();
-      setSearchResult(data.places);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const [searchInput, setSearchInput] = useState("");
+  const [inputOpacity, setInputOpacity] = useState(3);
+  const [searchResult, setSearchResult] = useState<{
+    data: Database["public"]["Tables"]["courses"]["Row"][] | null;
+    total: number;
+  }>({ data: null, total: 0 });
 
   useEffect(() => {
     async function getCurrentLocation() {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setErrorMeg("위치 정보 접근이 거부되었습니다. 권한을 허용해주세요.");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+      const location = await Location.getCurrentPositionAsync({});
       setCurrentLocation(location);
     }
-
     getCurrentLocation();
   }, []);
 
+  const onSubmit = async () => {
+    const data = await getCourses(0, 9, searchInput);
+    setSearchResult(data);
+  };
+
+  const handleSelectCourse = (course: CourseRow) => {
+    if (!course.loc_x || !course.loc_y) return;
+    const { latitude, longitude } = toWGS84(course.loc_x, course.loc_y);
+
+    setSelectedCourse({ ...course, loc_x: latitude, loc_y: longitude });
+
+    mapRef.current?.animateToRegion(
+      {
+        latitude,
+        longitude,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      },
+      800
+    );
+
+    bottomSheetRef.current?.snapToIndex(0);
+  };
+
   return (
     <GestureHandlerRootView style={styles.container}>
-      <Animated.View
-        style={[
-          {
-            position: "absolute",
-            zIndex: 1,
-            top: "5%",
-            left: "50%",
-            transform: [{ translateX: "-50%" }],
-            opacity: inputOpacity,
-          },
-        ]}>
+      <Animated.View style={[styles.searchBar, { opacity: inputOpacity }]}>
         <SearchBar
           input={searchInput}
           onChange={setSearchInput}
-          onSubmit={fetchPlaces}
+          onSubmit={onSubmit}
         />
       </Animated.View>
-      {/* 지도 */}
+
       <View style={styles.container}>
         {currentLocation ? (
           <MapView
+            ref={mapRef}
             provider={PROVIDER_GOOGLE}
             initialRegion={{
-              latitude: currentLocation?.coords.latitude,
-              longitude: currentLocation?.coords.longitude,
-              latitudeDelta: 0.005,
-              longitudeDelta: 0.005,
+              latitude: currentLocation.coords.latitude,
+              longitude: currentLocation.coords.longitude,
+              latitudeDelta: 0.01,
+              longitudeDelta: 0.01,
             }}
             showsUserLocation
-            followsUserLocation={true}
-            style={styles.map}></MapView>
+            style={styles.map}>
+            {selectedCourse && (
+              <Marker
+                coordinate={{
+                  latitude:
+                    selectedCourse.loc_x || currentLocation.coords.latitude,
+                  longitude:
+                    selectedCourse.loc_y || currentLocation.coords.longitude,
+                }}
+                title={selectedCourse.course_name || ""}
+              />
+            )}
+          </MapView>
         ) : (
           <MapLoading />
         )}
       </View>
-      {/* 모달 */}
-      {searchResult && (
+
+      {searchResult.data && (
         <BottomSheet
-          key={searchResult.length}
           ref={bottomSheetRef}
           snapPoints={snapPoints}
           index={0}
-          onChange={setSnapPointIndex}
           backgroundComponent={ModalBackgroundWhite}>
-          <BottomSheetView style={[styles.modalContainer, { zIndex: 3 }]}>
-            <RootList
-              searchResult={searchResult}
-              setOpacity={setInputOpacity}
-            />
-          </BottomSheetView>
+          <OpenCoursesList
+            searchInput={searchInput}
+            setInputOpacity={setInputOpacity}
+            onSelect={handleSelectCourse}
+          />
         </BottomSheet>
       )}
     </GestureHandlerRootView>
@@ -132,15 +123,13 @@ export default function ExploreScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1 },
+  searchBar: {
+    position: "absolute",
+    zIndex: 1,
+    top: "5%",
+    left: "50%",
+    transform: [{ translateX: "-50%" }],
   },
-  modalContainer: {
-    height: "100%",
-  },
-  map: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-  },
+  map: { flex: 1, width: "100%", height: "100%" },
 });
