@@ -22,3 +22,31 @@ export const getCourses = async (startIndex: number, endIndex: number, searchInp
 
   return {data, total:count||0}
 }
+
+// 구글 장소 검색
+const fetchPlaces = async (query: string) => {
+    try {
+      const res = await fetch(
+        "https://places.googleapis.com/v1/places:searchText",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key":
+              process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY!,
+            "X-Goog-FieldMask": "*",
+          },
+          body: JSON.stringify({
+            textQuery: query,
+            languageCode: "ko",
+            regionCode: "KR",
+          }),
+        }
+      );
+
+      const data = await res.json();
+      return data.places;
+    } catch (error) {
+      console.log(error);
+    }
+  };

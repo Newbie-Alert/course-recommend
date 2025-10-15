@@ -44,6 +44,8 @@ export default function OpenCoursesList({
 
       try {
         const { data, total } = await getCourses(start, end, searchInput);
+        if (!data || !data[0].loc_x || !data[0].loc_y) return;
+
         setCourses((prev) =>
           isRefresh
             ? data

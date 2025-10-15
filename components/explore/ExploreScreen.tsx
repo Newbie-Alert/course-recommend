@@ -49,6 +49,7 @@ export default function ExploreScreen() {
   const handleSelectCourse = (course: CourseRow) => {
     if (!course.loc_x || !course.loc_y) return;
     const { latitude, longitude } = toWGS84(course.loc_x, course.loc_y);
+    console.log(latitude, longitude);
 
     setSelectedCourse({ ...course, loc_x: latitude, loc_y: longitude });
 
