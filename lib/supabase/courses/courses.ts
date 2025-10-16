@@ -49,4 +49,16 @@ const fetchPlaces = async (query: string) => {
     } catch (error) {
       console.log(error);
     }
-  };
+};
+  
+
+export const groupedPaths = (raw:any) => {
+  return raw.features
+  .filter((el:any) => el.type === "Feature" && el.geometry)
+  .map((way:any) => ({
+    id: way.id,
+    coords: way.geometry.coordinates.map((g:any) => [...g]),
+    properties:way.properties
+  }))
+
+};
