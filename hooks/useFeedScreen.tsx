@@ -1,5 +1,5 @@
 import { pickAndUploadImage } from "@/lib/supabase/common/uploadFile";
-import { createFeed, getAllFeeds } from "@/lib/supabase/feed/feed";
+import { createFeed, getAllFeeds } from "@/lib/supabase/feed/feedApi";
 import { CreateFeedSchema } from "@/lib/supabase/feed/types";
 import { useFeedInitContext } from "@/providers/FeedInitProvider";
 import { Database } from "@/types/db.types";

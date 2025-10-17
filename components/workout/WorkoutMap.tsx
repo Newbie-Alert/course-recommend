@@ -1,32 +1,13 @@
 import MapLoading from "@/components/workout/MapLoading";
+import useUserLocation from "@/hooks/useUserLocation";
 import { useRun } from "@/providers/RunProvider";
-import * as Location from "expo-location";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet, View } from "react-native";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 
 export default function WorkoutMap() {
-  const [currentLocation, setCurrentLocation] =
-    useState<Location.LocationObject | null>(null);
-  const [errorMeg, setErrorMeg] = useState<string | null>(null);
+  const { currentLocation, errorMeg } = useUserLocation();
   const { path, status } = useRun();
-
-  // 사용자의 현재 위치 초기에 가져오기
-  useEffect(() => {
-    async function getCurrentLocation() {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-
-      if (status !== "granted") {
-        setErrorMeg("위치 정보 접근이 거부되었습니다. 권한을 허용해주세요.");
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      setCurrentLocation(location);
-    }
-
-    getCurrentLocation();
-  }, []);
 
   return (
     <View style={styles.container}>

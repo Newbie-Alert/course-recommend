@@ -1,6 +1,6 @@
 import { useAuthContext } from "@/hooks/useAuthContext";
 import { getTimeAgo } from "@/lib/getTimeAge";
-import { getFeedImageUrl, sendLike } from "@/lib/supabase/feed/feed";
+import { getFeedImageUrl, sendLike } from "@/lib/supabase/feed/feedApi";
 import { Database } from "@/types/db.types";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { ImageBackground } from "expo-image";
