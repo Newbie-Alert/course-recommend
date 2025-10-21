@@ -1,8 +1,8 @@
 import useTheme from "@/hooks/useTheme";
 import { Place } from "@/types/places.type";
-import { useBottomSheet } from "@gorhom/bottom-sheet";
+import { BottomSheetScrollView, useBottomSheet } from "@gorhom/bottom-sheet";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import {
   Extrapolation,
   interpolate,
@@ -27,18 +27,74 @@ export default function DetailSheet({ detail, setOpacity }: Props) {
     }
   );
 
+  const photoUrl = detail?.photos
+    ? `https://places.googleapis.com/v1/${detail?.photos[0].name}/media?maxWidthPx=800&key=${process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY}`
+    : "";
+
+  const address = detail?.formattedAddress.split(" ");
+
   return (
-    <View style={styles.container}>
-      <Text style={[typography.title1, { textAlign: "center" }]}>
-        {detail?.displayName.text}
-      </Text>
+    <BottomSheetScrollView style={styles.container}>
       <View
         style={{
           width: "100%",
-          paddingHorizontal: 12,
-          paddingBottom: 180,
-        }}></View>
-    </View>
+          marginBottom: 8,
+        }}>
+        {detail && detail.photos ? (
+          <Image
+            source={{ uri: photoUrl }}
+            style={{ width: "auto", height: 200, borderRadius: 6 }}
+          />
+        ) : (
+          <View
+            style={{
+              width: "auto",
+              height: 200,
+              borderRadius: 6,
+              backgroundColor: "black",
+            }}></View>
+        )}
+      </View>
+
+      <View>
+        <Text
+          ellipsizeMode="middle"
+          numberOfLines={1}
+          style={{
+            fontSize: 24,
+            fontWeight: 700,
+          }}>
+          {detail?.displayName.text}
+        </Text>
+        <Text style={[{ color: "#8C8C8C", fontSize: 16, marginBottom: 9 }]}>
+          {address && `${address[0]} ${address[1]}`}
+        </Text>
+
+        <Text style={[{ marginBottom: 3, fontWeight: 600, fontSize: 24 }]}>
+          Reviews
+        </Text>
+        <View>
+          {detail?.reviews?.map((review) => {
+            return (
+              <View
+                style={{
+                  marginBottom: 6,
+                  borderWidth: 1,
+                  borderColor: "#dbdbdb",
+                  borderRadius: 8,
+                  padding: 9,
+                }}>
+                <Text
+                  style={{ fontSize: 15, fontWeight: 600, marginBottom: 3 }}>
+                  {review.authorAttribution?.displayName}
+                </Text>
+                <Text>{review.text.text}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </BottomSheetScrollView>
   );
 }
 
@@ -46,7 +102,6 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
+    paddingHorizontal: 12,
   },
 });

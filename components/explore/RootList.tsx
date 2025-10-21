@@ -3,7 +3,7 @@ import { Place, PlaceResponse } from "@/types/places.type";
 import { BottomSheetFlatList, useBottomSheet } from "@gorhom/bottom-sheet";
 import { Image } from "expo-image";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   Extrapolation,
   interpolate,
@@ -53,15 +53,15 @@ export default function RootList({
             paddingBottom: 10,
           }}
           data={searchResult}
-          keyExtractor={(item: Place) => item.googleMapsUri}
+          keyExtractor={(item: Place) => item.displayName.text}
           renderItem={({ item }: { item: Place }) => {
             const photoUrl = item.photos
               ? `https://places.googleapis.com/v1/${item.photos[0].name}/media?maxWidthPx=800&key=${process.env.EXPO_PUBLIC_ANDROID_GOOGLE_PLACES_API_KEY}`
               : "";
             const address = item.formattedAddress.split(" ");
             return (
-              <View
-                key={item.displayName.text}
+              <Pressable
+                onPress={() => setDetail(item)}
                 style={{
                   width: "100%",
                   flexDirection: "row",
@@ -114,7 +114,7 @@ export default function RootList({
                     </View>
                   </View>
                 </View>
-              </View>
+              </Pressable>
             );
           }}
         />
@@ -125,6 +125,7 @@ export default function RootList({
 
 const styles = StyleSheet.create({
   container: {
+    zIndex: 3,
     width: "100%",
     flexDirection: "column",
     justifyContent: "space-between",

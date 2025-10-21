@@ -10,8 +10,9 @@ import {
 } from "@/lib/supabase/explore/exploreApi";
 import { Place, PlaceResponse } from "@/types/places.type";
 import BottomSheet from "@gorhom/bottom-sheet";
+import { useFocusEffect } from "@react-navigation/native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { BackHandler, StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Animated from "react-native-reanimated";
@@ -44,8 +45,12 @@ export default function Explore() {
   useEffect(() => {
     if (places && mapRef.current) {
       mapRef.current.animateToRegion({
-        latitude: places[0].location.latitude,
-        longitude: places[0].location.longitude,
+        latitude: detail
+          ? detail.location.latitude
+          : places[0].location.latitude,
+        longitude: detail
+          ? detail.location.longitude
+          : places[0].location.longitude,
         latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       });
@@ -60,6 +65,25 @@ export default function Explore() {
       console.log(error);
     }
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        if (detail) {
+          setDetail(undefined);
+          return true; // 기본 뒤로가기 동작 막기
+        }
+        return false; // detail이 없으면 기본 동작 수행
+      };
+
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        onBackPress
+      );
+
+      return () => subscription.remove();
+    }, [detail])
+  );
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -100,6 +124,9 @@ export default function Explore() {
                 return (
                   <Marker
                     key={item.displayName.text}
+                    onPress={() => {
+                      setDetail(item);
+                    }}
                     coordinate={{
                       latitude: item.location?.latitude,
                       longitude: item.location.longitude,
