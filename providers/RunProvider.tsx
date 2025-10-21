@@ -1,6 +1,15 @@
+import { instPaceSecPerKm } from "@/util/util";
 import * as Location from "expo-location";
+import { useRouter } from "expo-router";
 import haversine from "haversine-distance";
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { Alert } from "react-native";
 
 export type RunStatus = "ready" | "running" | "paused" | "stopped";
 export type LatLon = { latitude: number; longitude: number };
@@ -20,6 +29,8 @@ export type RunContextType = {
 };
 
 const RunContext = createContext<RunContextType | null>(null);
+const KCAL_PER_KM = 65;
+const MIN_STEP_M = 5;
 
 export default function RunProvider({
   children,
@@ -34,9 +45,17 @@ export default function RunProvider({
   const [instPace, setInstPace] = useState<number | null>(null);
   const [caloriesKcal, setCaloriesKcal] = useState(0);
 
+  const router = useRouter();
+
   const timeRef = useRef<number | null>(null);
   const watchSubRef = useRef<Location.LocationSubscription>(null);
-  const lastPointRef = useRef<LatLon | null>(null);
+
+  const distanceMeterRef = useRef(0);
+  const lastPointRef = useRef<{
+    lat: number;
+    lon: number;
+    timestamp: number;
+  } | null>(null);
 
   // 타이머
   const startTimer = () => {
@@ -62,41 +81,54 @@ export default function RunProvider({
 
     watchSubRef.current = await Location.watchPositionAsync(
       {
-        accuracy: Location.Accuracy.Balanced,
+        accuracy: Location.Accuracy.BestForNavigation,
         timeInterval: 1000,
         distanceInterval: 5,
         mayShowUserSettingsDialog: true,
       },
       (location) => {
-        // 새로 받은 현재 위치를 객체로 받음
-        const newPosition: LatLon = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
+        const { latitude, longitude, speed } = location.coords;
+        const ts = location.timestamp;
 
-        setPath((prev) => {
-          // 위치 정보가 처음에 비어 있을 경우, 처음 위치를 경로에 넣음
-          if (prev.length === 0) {
-            lastPointRef.current = newPosition;
-            return [newPosition];
-          }
+        if (!lastPointRef.current) {
+          lastPointRef.current = {
+            lat: latitude,
+            lon: longitude,
+            timestamp: ts,
+          };
+          setPath([{ latitude, longitude }]);
+          return;
+        }
 
-          // 마지막으로 저장된 위치
-          const lastPosition = lastPointRef.current ?? prev[prev.length - 1];
+        const last = lastPointRef.current;
 
-          // 실제 이동 거리 계산 (haversine 라이브러리 사용)
-          const disKm = haversine(lastPosition, newPosition);
+        const distanceMeters = haversine(
+          { lat: last.lat, lon: last.lon },
+          { lat: latitude, lon: longitude }
+        );
 
-          // 5m 이동 했을 때 새로운 위치를 추가
-          if (disKm > 0.005) {
-            setDistanceKm((km) => km + disKm);
-            lastPointRef.current = newPosition;
-            return [...prev, newPosition];
-          }
+        const distanceTime = Math.max(0.001, (ts - last.timestamp) / 1000);
 
-          // 움직임이 너무 작을 때 기존 경로 그대로 반환
-          return prev;
-        });
+        // 5m 이상 이동시에만 누적/경로 추가
+        if (distanceMeters > MIN_STEP_M) {
+          distanceMeterRef.current += distanceMeters;
+
+          // 거리/칼로리 실시간 업데이트
+          const kmNow = distanceMeterRef.current / 1000;
+          setDistanceKm(kmNow);
+          setCaloriesKcal(KCAL_PER_KM * kmNow);
+
+          // 실시간 페이스: GPS speed 우선 없으면 distanceMeters / distanceTime
+          const v = speed && speed > 0 ? speed : distanceMeters / distanceTime;
+          setInstPace(instPaceSecPerKm(v));
+
+          setPath((prev) => [...prev, { latitude, longitude }]);
+          lastPointRef.current = {
+            lat: latitude,
+            lon: longitude,
+            timestamp: ts,
+          };
+        }
       }
     );
   };
@@ -112,6 +144,10 @@ export default function RunProvider({
     setSeconds(0);
     setPath([]);
     setDistanceKm(0);
+    setAvgPace(0);
+    setInstPace(0);
+    setCaloriesKcal(0);
+    distanceMeterRef.current = 0;
     lastPointRef.current = null;
     startTimer();
     await startTracking();
@@ -135,10 +171,47 @@ export default function RunProvider({
 
   // 러닝 종료
   const stopRunning = () => {
-    setStatus("stopped");
-    clearTimer();
-    stopWatching();
+    if (status !== "running" && status !== "paused") return;
+
+    pauseRunning();
+
+    const totalSeconds = seconds;
+    const km = distanceKm;
+    const avg = km > 0 ? totalSeconds / km : null;
+    const caloriesNow = KCAL_PER_KM * km;
+
+    Alert.alert("러닝 종료", "러닝을 종료 하시겠어요?", [
+      { text: "취소", style: "cancel", onPress: () => resumeRunning() },
+      {
+        text: "종료",
+        onPress: () => {
+          setAvgPace(avg);
+          setStatus("stopped");
+          clearTimer();
+          stopWatching();
+          setCaloriesKcal(0);
+          setInstPace(null);
+
+          router.push({
+            pathname: "/results",
+            params: {
+              seconds: totalSeconds.toString(),
+              distanceKm: String(km),
+              avg: avg ? String(avg) : "0",
+              caloriesKcal: String(caloriesNow),
+            },
+          });
+        },
+      },
+    ]);
   };
+
+  useEffect(() => {
+    return () => {
+      clearTimer();
+      stopWatching();
+    };
+  }, []);
 
   return (
     <RunContext.Provider
@@ -161,9 +234,7 @@ export default function RunProvider({
 }
 
 export const useRun = (): RunContextType => {
-  const context = useContext(RunContext);
-  if (!context) {
-    throw new Error("useRun은 RunProvider안에서 사용해야합니다.");
-  }
-  return context;
+  const ctx = useContext(RunContext);
+  if (!ctx) throw new Error("useRun은 RunProvider안에서 사용해야합니다.");
+  return ctx;
 };
