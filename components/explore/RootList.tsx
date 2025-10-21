@@ -17,7 +17,11 @@ type Props = {
   setDetail: React.Dispatch<React.SetStateAction<Place | undefined>>;
 };
 
-export default function RootList({ searchResult, setOpacity }: Props) {
+export default function RootList({
+  searchResult,
+  setOpacity,
+  setDetail,
+}: Props) {
   const { typography, colors } = useTheme();
   const { animatedIndex } = useBottomSheet();
 

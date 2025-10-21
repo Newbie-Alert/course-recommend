@@ -1,3 +1,4 @@
+import DetailSheet from "@/components/explore/DetailSheet";
 import ModalBackgroundWhite from "@/components/explore/ModalBackgroundWhite";
 import RootList from "@/components/explore/RootList";
 import SearchBar from "@/components/explore/SearchBar";
@@ -119,7 +120,15 @@ export default function Explore() {
           index={0}
           onChange={setSnapPointIndex}
           backgroundComponent={ModalBackgroundWhite}>
-          <RootList searchResult={places} setOpacity={setInputOpacity} />
+          {detail ? (
+            <DetailSheet detail={detail} setOpacity={setInputOpacity} />
+          ) : (
+            <RootList
+              searchResult={places}
+              setOpacity={setInputOpacity}
+              setDetail={setDetail}
+            />
+          )}
         </BottomSheet>
       )}
     </GestureHandlerRootView>
