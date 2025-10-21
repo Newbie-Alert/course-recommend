@@ -16,6 +16,7 @@ const INCLUDES_TYPE = [
 
 const FIELD_MASK = [
   "places.name",
+  "places.displayName",
   "places.formattedAddress",
   "places.types",
   "places.location",
@@ -26,7 +27,8 @@ const FIELD_MASK = [
   "places.regularOpeningHours",
   "places.websiteUri",
   "places.nationalPhoneNumber",
-  "places.plusCode"
+  "places.plusCode",
+  "places.reviews"
 ].join(",");
 
 
@@ -38,7 +40,6 @@ const FIELD_MASK = [
  * @param lat y 좌표
  */
 export const getPlacesByCoords = async (lon: number, lat: number) => {
-  console.log(lon, lat)
   try {
     const res = await fetch('https://places.googleapis.com/v1/places:searchNearby',
       {
@@ -50,7 +51,7 @@ export const getPlacesByCoords = async (lon: number, lat: number) => {
         },
         body: JSON.stringify({
           includedTypes: INCLUDES_TYPE,
-          maxResultCount: 1,
+          maxResultCount: 10,
           locationRestriction: {
             circle: {
               center: {
@@ -64,7 +65,6 @@ export const getPlacesByCoords = async (lon: number, lat: number) => {
       });
     
     const data = await res.json();
-    console.log(JSON.stringify(data.places, null, 2));
     return data.places || []
   } catch (error:any) {
     console.log(JSON.stringify(error.details, null, 2))
@@ -86,7 +86,6 @@ export const getPlacesBySearchText = async (query: string) => {
             "X-Goog-FieldMask": FIELD_MASK,
           },
           body: JSON.stringify({
-            includedTypes:INCLUDES_TYPE,
             textQuery: query,
             languageCode: "ko",
             regionCode: "KR",
@@ -101,9 +100,9 @@ export const getPlacesBySearchText = async (query: string) => {
       // 검색 된 아이템 중 첫번째 아이템의 좌표
       const searchedPlaceCoord = data.places[0].location;
       
-      const nearByPlaces = getPlacesByCoords(searchedPlaceCoord.longitude, searchedPlaceCoord.latitude);
+      const nearByPlaces = await getPlacesByCoords(searchedPlaceCoord.longitude, searchedPlaceCoord.latitude);
+      return nearByPlaces
 
-      console.log(nearByPlaces);
     } catch (error) {
       console.log(error);
     }
