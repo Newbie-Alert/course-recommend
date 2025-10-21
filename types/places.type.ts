@@ -7,6 +7,7 @@ export interface Place {
   displayName: DisplayName;
   reviews?: Review[];
   photos?: Photo[];
+  location: { latitude: number, longitude: number };
 }
 
 /** 장소 이름 */

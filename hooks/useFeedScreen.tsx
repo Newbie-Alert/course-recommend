@@ -1,14 +1,17 @@
 import { pickAndUploadImage } from "@/lib/supabase/common/uploadFile";
-import { createFeed, getAllFeeds } from "@/lib/supabase/feed/feed";
-import { CreateFeedSchema, FeedSchema } from "@/lib/supabase/feed/types";
+import { createFeed, getAllFeeds } from "@/lib/supabase/feed/feedApi";
+import { CreateFeedSchema } from "@/lib/supabase/feed/types";
 import { useFeedInitContext } from "@/providers/FeedInitProvider";
+import { Database } from "@/types/db.types";
 import { useState } from "react";
 
 export default function useFeedScreen() {
   const { userId, location, address } = useFeedInitContext();
 
   const [imageUploading, setImageUploading] = useState<boolean>(false);
-  const [feed, setFeed] = useState<FeedSchema[] | null>();
+  const [feed, setFeed] = useState<
+    Database["public"]["Tables"]["feeds"]["Row"][] | null
+  >();
   const [post, setPost] = useState<Partial<CreateFeedSchema>>({
     content: "",
     image_url: "",
