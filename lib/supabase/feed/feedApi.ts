@@ -13,13 +13,12 @@ export const getAllFeeds = async () => {
   return feeds
 }
 
-
-export const createFeed = async ({ content, image_url, userId, location}: CreateFeedSchema) => {
+export const createFeed = async ({ content, image_url, userId, location,recordId}: CreateFeedSchema) => {
   try {
     const { data, error } = await supabase
   .from('feeds')
   .insert([
-    {content, image_url, writer: userId, location},
+    {content, image_url, writer: userId, location, record_id: recordId},
   ]).select()
     if (error) {
       console.log('insertError: error', error);

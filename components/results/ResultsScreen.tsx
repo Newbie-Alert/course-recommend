@@ -11,11 +11,26 @@ import {
   formatTime,
 } from "@/util/util";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import BottomSheet from "@gorhom/bottom-sheet";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, Text, View } from "react-native";
+import { Alert, Dimensions, Pressable, Text, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import ModalBackgroundWhite from "../explore/ModalBackgroundWhite";
+import FeedPostSheet from "./FeedPostSheet";
 
 export default function ResultsScreen() {
+  const dimension = Dimensions.get("screen");
+  const screenHeight = dimension.height;
+  const snapPoints = useMemo(() => [screenHeight], []);
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const [snapPointIndex, setSnapPointIndex] = useState(0);
+  const [isPost, setIsPost] = useState<boolean>(false);
+
+  const handleSheetClose = () => {
+    setIsPost(false);
+  };
+
   const { session } = useAuthContext();
   const userId = session?.user.id;
   const runContext = useRun();
@@ -83,7 +98,7 @@ export default function ResultsScreen() {
 
       const lineString = toLineStringGeoJSON();
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("records")
         .insert([
           {
@@ -96,9 +111,10 @@ export default function ResultsScreen() {
             avg_pace_sec_per_km:
               avgPace ?? avgPaceSecPerKm(seconds, distanceKm),
             calories_kcal: caloriesKcal,
-            path_geojson: toLineStringGeoJSON(),
+            path_geojson: lineString,
           },
         ])
+        .select("*")
         .single();
 
       if (error) throw error;
@@ -106,6 +122,8 @@ export default function ResultsScreen() {
       await clearLastRun();
 
       Alert.alert("저장 완료", "기록이 업로드되었습니다.");
+
+      return data;
     } catch (error: any) {
       console.log("저장 실패");
       Alert.alert("저장 실패", error?.message ?? "네트워크 또는 서버 오류");
@@ -114,8 +132,18 @@ export default function ResultsScreen() {
     }
   };
 
+  const saveRecordAndPost = async () => {
+    try {
+      const recordSaveRes = await handleSave();
+
+      if (recordSaveRes) {
+        const recordId = recordSaveRes.id;
+      }
+    } catch (error) {}
+  };
+
   return (
-    <View style={{ flex: 1, backgroundColor: "#fff" }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#fff" }}>
       {region && (
         <MapView
           style={{ flex: 1 }}
@@ -157,7 +185,10 @@ export default function ResultsScreen() {
               />
             </Pressable>
             <Pressable
-              onPress={() => console.log("피드공유기능 추가해주세요~~")}
+              onPress={() => {
+                setIsPost(true);
+                console.log("피드공유기능 추가해주세요~~");
+              }}
               disabled={saving}>
               <Text>피드공유</Text>
             </Pressable>
@@ -170,7 +201,22 @@ export default function ResultsScreen() {
           </Pressable>
         </View>
       </View>
-    </View>
+
+      {isPost && (
+        <BottomSheet
+          ref={bottomSheetRef}
+          snapPoints={snapPoints}
+          index={0}
+          onChange={setSnapPointIndex}
+          backgroundComponent={ModalBackgroundWhite}>
+          <FeedPostSheet
+            onCancle={handleSheetClose}
+            onSubmit={saveRecordAndPost}
+            snap={snap}
+          />
+        </BottomSheet>
+      )}
+    </GestureHandlerRootView>
   );
 }
 
