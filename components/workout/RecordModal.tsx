@@ -27,7 +27,6 @@ export default function RecordModal({
     stopRunning,
   } = useRun();
 
-  console.log(path);
   return (
     <View
       style={[
@@ -88,7 +87,7 @@ export default function RecordModal({
       <View style={styles.allRecordContainer}>
         <View style={styles.eachRecordContainer}>
           <Text style={styles.eachRecordHeader}>
-            {formatDistance(distanceKm)} km
+            {formatDistance(distanceKm)}
           </Text>
           <Text style={styles.eachRecordUnit}>거리(km)</Text>
         </View>

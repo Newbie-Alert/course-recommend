@@ -27,11 +27,13 @@ export const formatDistance = (km: number | null) => {
   return `${km.toFixed(2)}`;
 };
 
+// 칼로리 포맷
 export const formatCalories = (kcal: number | null) => {
   if (kcal === null || !isFinite(kcal)) return "0.0";
   return `${kcal.toFixed(1)}`;
 };
 
+// 페이스 포맷
 export const formatPace = (secPerKm: number | null) => {
   if (secPerKm === null || !isFinite(secPerKm) || secPerKm <= 0) return "--:--";
   const m = Math.floor(secPerKm / 60);
