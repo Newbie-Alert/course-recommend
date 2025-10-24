@@ -10,7 +10,6 @@ export default function ModalBackground({
   animatedIndex,
 }: BottomSheetBackgroundProps) {
   const containerAnimatedStyle = useAnimatedStyle(() => ({
-    // @ts-ignore
     backgroundColor: interpolateColor(
       animatedIndex.value,
       [0, 1],

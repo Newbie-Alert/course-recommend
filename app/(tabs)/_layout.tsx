@@ -36,6 +36,13 @@ export default function TabsLayout() {
             TabLabel({ labelName: "Explore", focused }),
         }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarLabel: ({ focused }) =>
+            TabLabel({ labelName: "Profile", focused }),
+        }}
+      />
     </Tabs>
   );
 }

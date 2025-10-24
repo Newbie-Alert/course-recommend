@@ -1,6 +1,11 @@
 import CircleButton from "@/components/ui/CircleButton";
 import { useRun } from "@/providers/RunProvider";
-import { formatTime } from "@/util/util";
+import {
+  formatCalories,
+  formatDistance,
+  formatPace,
+  formatTime,
+} from "@/util/util";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
@@ -14,12 +19,14 @@ export default function RecordModal({
     status,
     seconds,
     distanceKm,
+    instPace,
+    caloriesKcal,
+    path,
     pauseRunning,
     resumeRunning,
     stopRunning,
   } = useRun();
 
-  console.log(distanceKm);
   return (
     <View
       style={[
@@ -80,16 +87,18 @@ export default function RecordModal({
       <View style={styles.allRecordContainer}>
         <View style={styles.eachRecordContainer}>
           <Text style={styles.eachRecordHeader}>
-            {(distanceKm / 1000).toFixed(2)} km
+            {formatDistance(distanceKm)}
           </Text>
           <Text style={styles.eachRecordUnit}>거리(km)</Text>
         </View>
         <View style={styles.eachRecordContainer}>
-          <Text style={styles.eachRecordHeader}>0:00</Text>
+          <Text style={styles.eachRecordHeader}>{formatPace(instPace)}</Text>
           <Text style={styles.eachRecordUnit}>페이스</Text>
         </View>
         <View style={styles.eachRecordContainer}>
-          <Text style={styles.eachRecordHeader}>0</Text>
+          <Text style={styles.eachRecordHeader}>
+            {formatCalories(caloriesKcal)}
+          </Text>
           <Text style={styles.eachRecordUnit}>칼로리(kcal)</Text>
         </View>
       </View>

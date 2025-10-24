@@ -8,6 +8,8 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 export default function WorkoutMap() {
   const { currentLocation, errorMeg } = useUserLocation();
   const { path, status } = useRun();
+  const start = path[0];
+  const end = path[path.length - 1];
 
   return (
     <View style={styles.container}>
@@ -24,7 +26,7 @@ export default function WorkoutMap() {
           followsUserLocation={true}
           style={styles.map}>
           {/* 러닝 시작 지점 */}
-          {path.length > 0 && (
+          {status === "running" && start && (
             <Marker
               coordinate={{
                 latitude: currentLocation.coords.latitude,
@@ -35,7 +37,7 @@ export default function WorkoutMap() {
             />
           )}
           {/* 러닝 종료 지점 */}
-          {status === "stopped" && (
+          {status === "stopped" && end && (
             <Marker
               coordinate={{
                 latitude: currentLocation.coords.latitude,
