@@ -5,19 +5,19 @@ import { Image, Pressable, Text, TextInput, View } from "react-native";
 
 type Props = {
   snap: RunSnapshot | null;
-  onSubmit: (
-    title: string,
-    memo: string,
-    photoUri: string | null,
-    snap: any
-  ) => void;
+  photoUri: string | undefined;
+  onSubmit: (title: string, memo: string) => void;
   onCancle: () => void;
 };
 
-export default function FeedPostSheet({ snap, onSubmit, onCancle }: Props) {
+export default function FeedPostSheet({
+  snap,
+  photoUri,
+  onSubmit,
+  onCancle,
+}: Props) {
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
 
   return (
     <BottomSheetView style={{ padding: 16 }}>
@@ -36,15 +36,13 @@ export default function FeedPostSheet({ snap, onSubmit, onCancle }: Props) {
         style={{
           borderWidth: 1,
           borderColor: "#ddd",
-          height: 100,
-          padding: 8,
           borderRadius: 8,
         }}
       />
       {photoUri && (
         <Image
           source={{ uri: photoUri }}
-          style={{ height: 120, marginVertical: 8, borderRadius: 8 }}
+          style={{ height: 360, marginVertical: 8, borderRadius: 8 }}
         />
       )}
       <View
@@ -66,7 +64,7 @@ export default function FeedPostSheet({ snap, onSubmit, onCancle }: Props) {
           <Text style={{ color: "#fff", textAlign: "center" }}>취소하기</Text>
         </Pressable>
         <Pressable
-          onPress={() => onSubmit(title, memo, photoUri, snap)}
+          onPress={() => onSubmit(title, memo)}
           style={{
             backgroundColor: "#ff6600",
             padding: 12,

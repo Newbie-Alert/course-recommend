@@ -5,7 +5,8 @@ export type CreateFeedSchema = {
   image_url?: string;
   userId: string;
   location?: LocationObject | null;
-  recordId: string;
+  recordId?: string;
+  title: string;
 }
 
 export type FeedSchema = {

@@ -56,6 +56,7 @@ export default function useFeedScreen() {
       image_url: image_url || "",
       userId,
       location,
+      title: "",
     };
 
     try {

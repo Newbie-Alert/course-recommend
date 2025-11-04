@@ -1,5 +1,7 @@
 import { useAuthContext } from "@/hooks/useAuthContext";
+import useImageParser from "@/hooks/useImageParser";
 import { clearLastRun, loadLastRun } from "@/lib/lastRun";
+import { createFeed } from "@/lib/supabase/feed/feedApi";
 import { supabase } from "@/lib/supabase/supabase";
 import { useRun } from "@/providers/RunProvider";
 import { RunSnapshot } from "@/types/run.type";
@@ -12,10 +14,12 @@ import {
 } from "@/util/util";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import BottomSheet from "@gorhom/bottom-sheet";
+import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Dimensions, Pressable, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
+import ViewShot from "react-native-view-shot";
 import ModalBackgroundWhite from "../explore/ModalBackgroundWhite";
 import FeedPostSheet from "./FeedPostSheet";
 
@@ -26,6 +30,12 @@ export default function ResultsScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [snapPointIndex, setSnapPointIndex] = useState(0);
   const [isPost, setIsPost] = useState<boolean>(false);
+  const router = useRouter();
+
+  // viewshot Ref
+  const viewShotRef = useRef<ViewShot>(null);
+
+  const { imageParser, handleImageUpload } = useImageParser();
 
   const handleSheetClose = () => {
     setIsPost(false);
@@ -35,6 +45,7 @@ export default function ResultsScreen() {
   const userId = session?.user.id;
   const runContext = useRun();
   const [snap, setSnap] = useState<RunSnapshot | null>(null);
+  const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -74,6 +85,8 @@ export default function ResultsScreen() {
     };
   }, [start?.latitude, start?.longitude]);
 
+  console.log("region", region);
+
   const mapRef = useRef<MapView | null>(null);
   useEffect(() => {
     if (mapRef.current && path.length >= 2) {
@@ -89,6 +102,7 @@ export default function ResultsScreen() {
     coordinate: path.map((p) => [p.longitude, p.latitude]),
   });
 
+  // record 데이터 저장
   const handleSave = async () => {
     try {
       if (!userId) return Alert.alert("오류", "로그인이 필요합니다.");
@@ -132,33 +146,64 @@ export default function ResultsScreen() {
     }
   };
 
-  const saveRecordAndPost = async () => {
+  // Feed를 저장
+  const saveRecordAndPost = async (title: string, memo: string) => {
+    if (!userId) throw Error("로그인이 필요합니다");
+    if (!viewShotRef.current) {
+      throw Error("이미지를 캡처할 수 없습니다. ref 확인");
+    }
+
+    const parsedImage = await imageParser(photoUri);
+    const { fileName, arrayBuffer, mimeType } = parsedImage!;
+    const imagePath = await handleImageUpload({
+      fileName,
+      arrayBuffer,
+      mimeType,
+    });
+
     try {
       const recordSaveRes = await handleSave();
 
+      // record Id를 외래키로 걸어서
+      // record와 feed를 연결
       if (recordSaveRes) {
         const recordId = recordSaveRes.id;
+        await createFeed({
+          title,
+          content: memo,
+          recordId,
+          userId,
+          image_url: imagePath,
+        });
       }
-    } catch (error) {}
+      setIsPost(false);
+      router.push({ pathname: "/workout" });
+    } catch (error) {
+      Alert.alert("저장 실패 : feed 저장 실패");
+    }
   };
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#fff" }}>
       {region && (
-        <MapView
-          style={{ flex: 1 }}
-          provider={PROVIDER_GOOGLE}
-          initialRegion={region}>
-          {path.length >= 2 && (
-            <Polyline
-              coordinates={path}
-              strokeColor="#FF6600"
-              strokeWidth={5}
-            />
-          )}
-          {start && <Marker coordinate={start} title="출발" pinColor="green" />}
-          {end && <Marker coordinate={end} title="도착" pinColor="red" />}
-        </MapView>
+        <ViewShot style={{ flex: 1 }} ref={viewShotRef}>
+          <MapView
+            style={{ flex: 1 }}
+            provider={PROVIDER_GOOGLE}
+            initialRegion={region}>
+            {path.length >= 2 && (
+              <Polyline
+                coordinates={path}
+                strokeColor="#FF6600"
+                strokeWidth={5}
+              />
+            )}
+            {start && (
+              <Marker coordinate={start} title="출발" pinColor="green" />
+            )}
+            {end && <Marker coordinate={end} title="도착" pinColor="red" />}
+          </MapView>
+        </ViewShot>
       )}
 
       <View style={{ padding: 20 }}>
@@ -185,9 +230,16 @@ export default function ResultsScreen() {
               />
             </Pressable>
             <Pressable
-              onPress={() => {
-                setIsPost(true);
-                console.log("피드공유기능 추가해주세요~~");
+              onPress={async () => {
+                if (!viewShotRef.current)
+                  throw Error("캡처 영역을 찾을 수 없습니다");
+                try {
+                  const photoUri = await viewShotRef?.current?.capture?.();
+                  setPhotoUri(photoUri);
+                  setIsPost(true);
+                } catch (error) {
+                  console.log(error);
+                }
               }}
               disabled={saving}>
               <Text>피드공유</Text>
@@ -210,9 +262,10 @@ export default function ResultsScreen() {
           onChange={setSnapPointIndex}
           backgroundComponent={ModalBackgroundWhite}>
           <FeedPostSheet
-            onCancle={handleSheetClose}
-            onSubmit={saveRecordAndPost}
             snap={snap}
+            photoUri={photoUri}
+            onSubmit={saveRecordAndPost}
+            onCancle={handleSheetClose}
           />
         </BottomSheet>
       )}
