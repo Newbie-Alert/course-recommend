@@ -81,7 +81,7 @@ export type Database = {
           content: string | null
           id: string
           images:string[] | null
-          image_url: string | null
+          thumbnail: string | null
           inserted_at: string
           likers: Likers[] | null
           likes: number
@@ -93,7 +93,7 @@ export type Database = {
         Insert: {
           content?: string | null
           id?: string
-          image_url?: string | null
+          thumbnail?: string | null
           inserted_at?: string
           likers?: Likers[] | null
           likes?: number
@@ -105,7 +105,7 @@ export type Database = {
         Update: {
           content?: string | null
           id?: string
-          image_url?: string | null
+          thumbnail?: string | null
           inserted_at?: string
           likers?: Likers[] | null
           likes?: number

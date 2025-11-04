@@ -18,7 +18,10 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Dimensions, Pressable, Text, View } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  ScrollView,
+} from "react-native-gesture-handler";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import ViewShot from "react-native-view-shot";
 import ModalBackgroundWhite from "../explore/ModalBackgroundWhite";
@@ -188,7 +191,7 @@ export default function ResultsScreen() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: "#fff" }}>
       {region && (
-        <ViewShot style={{ flex: 1 }} ref={viewShotRef}>
+        <ViewShot style={{ flex: 3 }} ref={viewShotRef}>
           <MapView
             style={{ flex: 1 }}
             provider={PROVIDER_GOOGLE}
@@ -207,10 +210,8 @@ export default function ResultsScreen() {
           </MapView>
         </ViewShot>
       )}
-      {/* 이미지 캐러셀 미리보기 화면 */}
-      {selectedImages && <Carousel imagePaths={selectedImages} />}
 
-      <View style={{ padding: 20 }}>
+      <ScrollView style={{ padding: 20 }}>
         <Text style={{ fontSize: 18, fontWeight: "600" }}>결과</Text>
         <Text> 시간: {formatTime(seconds)}</Text>
         <Text> 거리: {formatDistance(distanceKm)}</Text>
@@ -221,8 +222,6 @@ export default function ResultsScreen() {
           <View
             style={{
               display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
             }}>
             <Pressable
               onPress={async () => {
@@ -238,30 +237,43 @@ export default function ResultsScreen() {
                 color="black"
               />
             </Pressable>
-            <Pressable
-              onPress={async () => {
-                if (!viewShotRef.current)
-                  throw Error("캡처 영역을 찾을 수 없습니다");
-                try {
-                  const photoUri = await viewShotRef?.current?.capture?.();
-                  setPhotoUri(photoUri);
-                  setIsPost(true);
-                } catch (error) {
-                  console.log(error);
-                }
-              }}
-              disabled={saving}>
-              <Text>피드공유</Text>
-            </Pressable>
           </View>
         </View>
+        {selectedImages && (
+          <View style={{ height: 200 }}>
+            {/* 이미지 캐러셀 미리보기 화면 */}
+            <Carousel imagePaths={selectedImages} />
+          </View>
+        )}
 
-        <View style={{ marginTop: 12 }}>
+        <View
+          style={{
+            marginTop: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 16,
+            flex: 1,
+          }}>
           <Pressable onPress={() => handleSave()} disabled={saving}>
             <Text>기록저장</Text>
           </Pressable>
+          <Pressable
+            onPress={async () => {
+              if (!viewShotRef.current)
+                throw Error("캡처 영역을 찾을 수 없습니다");
+              try {
+                const photoUri = await viewShotRef?.current?.capture?.();
+                setPhotoUri(photoUri);
+                setIsPost(true);
+              } catch (error) {
+                console.log(error);
+              }
+            }}
+            disabled={saving}>
+            <Text>피드공유</Text>
+          </Pressable>
         </View>
-      </View>
+      </ScrollView>
 
       {isPost && (
         <BottomSheet
