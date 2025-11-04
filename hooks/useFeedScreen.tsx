@@ -14,7 +14,7 @@ export default function useFeedScreen() {
   >();
   const [post, setPost] = useState<Partial<CreateFeedSchema>>({
     content: "",
-    image_url: "",
+    thumbnail: "",
   });
 
   const loadFeeds = async () => {
@@ -44,7 +44,7 @@ export default function useFeedScreen() {
   };
 
   const uploadPost = async () => {
-    const { content, image_url } = post;
+    const { content, thumbnail } = post;
     if (!content?.trim()) {
       console.error("content가 없음");
       return;
@@ -53,14 +53,15 @@ export default function useFeedScreen() {
 
     const newFeed = {
       content,
-      image_url: image_url || "",
+      thumbnail: thumbnail || "",
       userId,
       location,
+      title: "",
     };
 
     try {
       await createFeed(newFeed);
-      setPost({ content: "", image_url: "" });
+      setPost({ content: "", thumbnail: "" });
       await loadFeeds();
     } catch (error) {
       throw new Error("create Feed Error");

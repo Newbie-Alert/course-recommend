@@ -17,10 +17,18 @@ export default function FeedCard(
   const [likes, setLikes] = useState<number>(props.likes ?? 0);
   const [canLikes, setCanLikes] = useState<boolean>(true);
 
-  const { content, inserted_at, writer, image_url, location, id, likers } =
-    props;
+  const {
+    content,
+    inserted_at,
+    writer,
+    thumbnail,
+    location,
+    id,
+    likers,
+    images,
+  } = props;
 
-  const imageSrc = getFeedImageUrl(image_url);
+  const imageSrc = getFeedImageUrl(thumbnail);
   const [imageLoading, setImageLoading] = useState<boolean>(false);
 
   const handleLike = async () => {

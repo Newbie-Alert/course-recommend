@@ -1,14 +1,7 @@
 import useFeedScreen from "@/hooks/useFeedScreen";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import ScreenHeader from "../ui/ScreenHeader";
 import ScreenView from "../ui/ScreenView";
 import FeedCard from "./FeedCard";
@@ -77,8 +70,8 @@ export default function FeedScreen() {
       <FlatList
         data={feed.sort(
           (a, b) =>
-            new Date(a.inserted_at).getTime() -
-            new Date(b.inserted_at).getTime()
+            new Date(b.inserted_at).getTime() -
+            new Date(a.inserted_at).getTime()
         )}
         keyExtractor={(feed) => feed.id}
         renderItem={({ item }) => <FeedCard {...item} />}
@@ -86,25 +79,6 @@ export default function FeedScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
-
-      <TextInput
-        value={post.content}
-        onChangeText={(text: string) => {
-          setPost((prev) => ({ ...prev, content: text }));
-        }}
-      />
-      <Pressable onPress={handlePickImage}>
-        <Text>이미지 업로드!</Text>
-      </Pressable>
-      {imageUploading ? (
-        <View>
-          <Text>이미지 업로드 중...</Text>
-        </View>
-      ) : (
-        <Pressable onPress={uploadPost}>
-          <Text>Post</Text>
-        </Pressable>
-      )}
     </ScreenView>
   );
 }
