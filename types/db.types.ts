@@ -80,6 +80,7 @@ export type Database = {
         Row: {
           content: string | null
           id: string
+          images:string[] | null
           image_url: string | null
           inserted_at: string
           likers: Likers[] | null

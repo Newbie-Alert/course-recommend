@@ -1,6 +1,7 @@
 import { useAuthContext } from "@/hooks/useAuthContext";
 import useImageParser from "@/hooks/useImageParser";
 import { clearLastRun, loadLastRun } from "@/lib/lastRun";
+import { pickAndUploadMultipleImages } from "@/lib/supabase/common/uploadFile";
 import { createFeed } from "@/lib/supabase/feed/feedApi";
 import { supabase } from "@/lib/supabase/supabase";
 import { useRun } from "@/providers/RunProvider";
@@ -21,6 +22,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import ViewShot from "react-native-view-shot";
 import ModalBackgroundWhite from "../explore/ModalBackgroundWhite";
+import Carousel from "../result/Carousel";
 import FeedPostSheet from "./FeedPostSheet";
 
 export default function ResultsScreen() {
@@ -47,6 +49,8 @@ export default function ResultsScreen() {
   const [snap, setSnap] = useState<RunSnapshot | null>(null);
   const [photoUri, setPhotoUri] = useState<string | undefined>();
   const [saving, setSaving] = useState(false);
+
+  const [selectedImages, setSelectedImages] = useState<string[]>();
 
   useEffect(() => {
     (async () => {
@@ -84,8 +88,6 @@ export default function ResultsScreen() {
       longitudeDelta: 0.01,
     };
   }, [start?.latitude, start?.longitude]);
-
-  console.log("region", region);
 
   const mapRef = useRef<MapView | null>(null);
   useEffect(() => {
@@ -139,7 +141,6 @@ export default function ResultsScreen() {
 
       return data;
     } catch (error: any) {
-      console.log("저장 실패");
       Alert.alert("저장 실패", error?.message ?? "네트워크 또는 서버 오류");
     } finally {
       setSaving(false);
@@ -173,7 +174,8 @@ export default function ResultsScreen() {
           content: memo,
           recordId,
           userId,
-          image_url: imagePath,
+          thumbnail: imagePath,
+          images: selectedImages,
         });
       }
       setIsPost(false);
@@ -205,6 +207,8 @@ export default function ResultsScreen() {
           </MapView>
         </ViewShot>
       )}
+      {/* 이미지 캐러셀 미리보기 화면 */}
+      {selectedImages && <Carousel imagePaths={selectedImages} />}
 
       <View style={{ padding: 20 }}>
         <Text style={{ fontSize: 18, fontWeight: "600" }}>결과</Text>
@@ -221,7 +225,12 @@ export default function ResultsScreen() {
               alignItems: "center",
             }}>
             <Pressable
-              onPress={() => console.log("사진 업로드 기능 추가해주세요~~")}
+              onPress={async () => {
+                const images = await pickAndUploadMultipleImages();
+                if (!images) return;
+
+                setSelectedImages(images);
+              }}
               disabled={saving}>
               <MaterialIcons
                 name="add-photo-alternate"
